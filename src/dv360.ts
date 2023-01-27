@@ -223,7 +223,7 @@ export class DV360 extends ApiClient {
     const delayMultiplier = 2;
     let downloadOperation;
     return new Promise((resolve, reject) => {
-      let delay = 1000;
+      let delay = initialDelay;
       let tryCount = 0;
       while (tryCount <= maxRetries) {
         downloadOperation = this.fetchEntity(operationResourceUrl);
