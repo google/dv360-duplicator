@@ -96,7 +96,7 @@ export class DV360 extends ApiClient {
   listPartners(options?: ListPartnersOptions) {
     let partners: Dv360Partner[] = [];
     let nextPageToken: string | undefined;
-
+    
     do {
       const response = this.listPartnersPage(nextPageToken, options);
       partners = partners.concat(response.partners);

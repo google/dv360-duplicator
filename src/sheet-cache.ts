@@ -31,6 +31,13 @@ export class SheetCache {
     ) {}
 
     /**
+     * Returns TRUE if the cache is empty. 
+     */
+    isEmpty() {
+        return ! this.cacheSheet.getLastRow();
+    }
+
+    /**
      * Save the array of data (the rows) to the sheet.
      * By default it will override the existing cache sheet.
      * 
@@ -70,7 +77,15 @@ export class SheetCache {
      * @param index The index (first element is "0") of the column where we search for it
      * @param returnOnlyOne If set to TRUE, then will return only first found element
      */
-    lookup(key: CacheValue, index: number, returnOnlyOne: boolean = false): Array<CacheValue> {
+    lookup(
+        key: CacheValue, 
+        index: number, 
+        returnOnlyOne: boolean = false
+    ): Array<CacheValue>|Array<Array<CacheValue>> {
+        if (this.isEmpty()) {
+            return [];
+        }
+
         const data = this.cacheSheet
             .getRange(
                 1, 1,
