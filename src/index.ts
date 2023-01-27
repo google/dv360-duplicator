@@ -142,5 +142,6 @@ onEditEvent.addHandler(advertiserChangedHandler);
 
 function test() {
   const sdfMedia = dv360.downloadSdf('676945619');
+  // const sdfMedia = dv360.downloadMedia('sdfdownloadtasks/media/74860956');
   Logger.log(sdfMedia);
 }

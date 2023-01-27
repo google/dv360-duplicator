@@ -88,7 +88,7 @@ export class DV360 extends ApiClient {
     options?: ListPartnersOptions
   ): Dv360PartnersPage {
     const { pageSize, filter, orderBy } = options ?? {};
-    return this.fetchUrl(
+    return this.fetchEntity(
       this.getUrl('partners', { pageToken, pageSize, filter, orderBy })
     );
   }
@@ -118,7 +118,7 @@ export class DV360 extends ApiClient {
     options?: ListAdvertiserOptions
   ): Dv360AdvertisersPage {
     const { pageSize, filter, orderBy } = options ?? {};
-    return this.fetchUrl(
+    return this.fetchEntity(
       this.getUrl('advertisers', {
         partnerId,
         pageToken,
@@ -158,7 +158,7 @@ export class DV360 extends ApiClient {
     options?: ListCampaignOptions
   ): Dv360CampaignsPage {
     const { pageSize, filter, orderBy } = options ?? {};
-    return this.fetchUrl(
+    return this.fetchEntity(
       this.getUrl(`advertisers/${advertiserId}/campaigns`, {
         pageToken,
         pageSize,
@@ -192,7 +192,7 @@ export class DV360 extends ApiClient {
   }
 
   protected createSdfDownloadOperation(advertiserId: string) {
-    const downloadOperation = this.fetchUrl(
+    const downloadOperation = this.fetchEntity(
       this.getUrl('sdfdownloadtasks'),
       {
         method: 'post'
@@ -216,27 +216,39 @@ export class DV360 extends ApiClient {
     return downloadOperation;
   }
 
-  protected waitForDownloadOperationResource(downloadOperationName: string): string {
+  protected waitForDownloadOperationResource(downloadOperationName: string) {
     const operationResourceUrl = this.getUrl(downloadOperationName);
+    let delay = 1000;
+    let tryCount = 0;
+    const maxRetries = 10;
+    const delayMultiplier = 2;
     let downloadOperation;
-    do {
-      downloadOperation = this.fetchUrl(operationResourceUrl);
+    while (tryCount <= maxRetries) {
+      downloadOperation = this.fetchEntity(operationResourceUrl);
       Logger.log(downloadOperation);
-      Utilities.sleep(1000);
-    } while (downloadOperation.done !== true);
-    return downloadOperation.response.resourceName;
+      if (downloadOperation.done === true) {
+        return downloadOperation.response.resourceName;
+      }
+      Logger.log(`Backing off for ${delay}ms`);
+      Utilities.sleep(delay);
+      tryCount++;
+      delay *= delayMultiplier;
+    }
+    Logger.log(`Try limit exceeded after ${tryCount} tries`);
+    return undefined;
   }
 
-  protected downloadMedia(resourceName: string): Object{
+  downloadMedia(resourceName: string): Object {
     //url doesn't contain version, just /media/
-    const downloadMediaUrl = this.getUrl(`download/${resourceName}?alt=media`).replace('/v2', '');
-    const downloadMedia = this.fetchUrl(downloadMediaUrl);
+    const downloadMediaUrl = this.getUrl(
+      `download/${resourceName}?alt=media`
+    ).replace('/v2', '');
+    const downloadMedia = this.fetchBlob(downloadMediaUrl);
     return downloadMedia;
   }
 
-  downloadSdf(advertiserId: string): Object{
+  downloadSdf(advertiserId: string): Object {
     const downloadTask = this.createSdfDownloadOperation(advertiserId);
-
     let resourceName = this.waitForDownloadOperationResource(downloadTask.name);
     return this.downloadMedia(resourceName);
   }

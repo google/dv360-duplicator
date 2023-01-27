@@ -44,13 +44,33 @@ export abstract class ApiClient {
     return paramString ? `${pathUrl}?${paramString}` : pathUrl;
   }
 
-  /**
-   * Make an HTTPS API request using specified auth method (see 'Auth' class)
-   */
-  fetchUrl(
+  fetchEntity(
     url: string,
     options?: GoogleAppsScript.URL_Fetch.URLFetchRequestOptions,
     payload?: Record<string, any>
+  ) {
+    const res = this.fetchResponse(url, options, payload);
+    return res.getContentText() ? JSON.parse(res.getContentText()) : {};
+  }
+
+  fetchBlob(
+    url: string,
+    options?: GoogleAppsScript.URL_Fetch.URLFetchRequestOptions,
+    payload?: Record<string, any>
+  ) {
+    const res = this.fetchResponse(url, options, payload);
+    const blob = res.getBlob();
+    const unpacked = Utilities.unzip(blob);
+    return unpacked;
+  }
+
+  /**
+   * Make an HTTPS API request using specified auth method (see 'Auth' class)
+   */
+  fetchResponse(
+    url: string,
+    options: GoogleAppsScript.URL_Fetch.URLFetchRequestOptions | undefined,
+    payload: Record<string, any> | undefined
   ) {
     const defaultOptions: GoogleAppsScript.URL_Fetch.URLFetchRequestOptions = {
       muteHttpExceptions: true,
@@ -79,7 +99,6 @@ export abstract class ApiClient {
       Logger.log('URL: ' + url);
       throw new Error(res.getContentText());
     }
-
-    return res.getContentText() ? JSON.parse(res.getContentText()) : {};
+    return res;
   }
 }
