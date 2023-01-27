@@ -216,26 +216,29 @@ export class DV360 extends ApiClient {
     return downloadOperation;
   }
 
-  protected waitForDownloadOperationResource(downloadOperationName: string) {
+  protected waitForDownloadOperationResource(downloadOperationName: string): Promise<string> {
     const operationResourceUrl = this.getUrl(downloadOperationName);
-    let delay = 1000;
-    let tryCount = 0;
+    const initialDelay = 2000;
     const maxRetries = 10;
     const delayMultiplier = 2;
     let downloadOperation;
-    while (tryCount <= maxRetries) {
-      downloadOperation = this.fetchEntity(operationResourceUrl);
-      Logger.log(downloadOperation);
-      if (downloadOperation.done === true) {
-        return downloadOperation.response.resourceName;
+    return new Promise((resolve, reject) => {
+      let delay = 1000;
+      let tryCount = 0;
+      while (tryCount <= maxRetries) {
+        downloadOperation = this.fetchEntity(operationResourceUrl);
+        Logger.log(downloadOperation);
+        if (downloadOperation.done === true) {
+          resolve(downloadOperation.response.resourceName);
+        }
+        Logger.log(`Backing off for ${delay}ms`);
+        Utilities.sleep(delay);
+        tryCount++;
+        delay *= delayMultiplier;
       }
-      Logger.log(`Backing off for ${delay}ms`);
-      Utilities.sleep(delay);
-      tryCount++;
-      delay *= delayMultiplier;
-    }
-    Logger.log(`Try limit exceeded after ${tryCount} tries`);
-    return undefined;
+      Logger.log(`Try limit exceeded after ${tryCount} tries`);
+      reject();
+    });
   }
 
   downloadMedia(resourceName: string): Object {
@@ -247,9 +250,11 @@ export class DV360 extends ApiClient {
     return downloadMedia;
   }
 
-  downloadSdf(advertiserId: string): Object {
+  async downloadSdf(advertiserId: string): Promise<Object> {
     const downloadTask = this.createSdfDownloadOperation(advertiserId);
-    let resourceName = this.waitForDownloadOperationResource(downloadTask.name);
+    const resourceName = await this.waitForDownloadOperationResource(
+      downloadTask.name
+    );
     return this.downloadMedia(resourceName);
   }
 }
