@@ -139,3 +139,8 @@ const advertiserChangedHandler: OnEditHandler = {
 };
 onEditEvent.addHandler(partnerChangedHandler);
 onEditEvent.addHandler(advertiserChangedHandler);
+
+function test() {
+  const sdfMedia = dv360.downloadSdf('676945619');
+  Logger.log(sdfMedia);
+}

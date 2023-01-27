@@ -190,4 +190,54 @@ export class DV360 extends ApiClient {
     }
     return campaigns;
   }
+
+  protected createSdfDownloadOperation(advertiserId: string) {
+    const downloadOperation = this.fetchUrl(
+      this.getUrl('sdfdownloadtasks'),
+      {
+        method: 'post'
+      },
+      {
+        version: 'SDF_VERSION_5_5',
+        advertiserId: advertiserId,
+        parentEntityFilter: {
+          fileType: [
+            'FILE_TYPE_CAMPAIGN',
+            'FILE_TYPE_INSERTION_ORDER'
+            // "FILE_TYPE_LINE_ITEM",
+            // "FILE_TYPE_AD_GROUP",
+            // "FILE_TYPE_AD"
+          ],
+          filterType: 'FILTER_TYPE_NONE',
+          filterIds: []
+        }
+      }
+    );
+    return downloadOperation;
+  }
+
+  protected waitForDownloadOperationResource(downloadOperationName: string): string {
+    const operationResourceUrl = this.getUrl(downloadOperationName);
+    let downloadOperation;
+    do {
+      downloadOperation = this.fetchUrl(operationResourceUrl);
+      Logger.log(downloadOperation);
+      Utilities.sleep(1000);
+    } while (downloadOperation.done !== true);
+    return downloadOperation.response.resourceName;
+  }
+
+  protected downloadMedia(resourceName: string): Object{
+    //url doesn't contain version, just /media/
+    const downloadMediaUrl = this.getUrl(`download/${resourceName}?alt=media`).replace('/v2', '');
+    const downloadMedia = this.fetchUrl(downloadMediaUrl);
+    return downloadMedia;
+  }
+
+  downloadSdf(advertiserId: string): Object{
+    const downloadTask = this.createSdfDownloadOperation(advertiserId);
+
+    let resourceName = this.waitForDownloadOperationResource(downloadTask.name);
+    return this.downloadMedia(resourceName);
+  }
 }
