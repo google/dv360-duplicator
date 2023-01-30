@@ -1,17 +1,18 @@
 import { Config } from './config';
 import { DV360 } from './dv360';
 import { SheetUtils } from './sheets';
-import { SheetCache } from "./sheet-cache";
+import { SheetCache } from './sheet-cache';
+import { CacheUtils } from './cache-utils';
 import { onEditEvent, OnEditHandler } from './trigger';
 
+/**
+ * Global cache container
+ */
+const SHEET_CACHE = CacheUtils.initCache(Config.CacheSheetName);
 const dv360 = new DV360(ScriptApp.getOAuthToken());
 
 function loadPartners() {
-  const partnersCache = new SheetCache(
-    SheetUtils.getOrCreateSheet(Config.CacheSheetName.Partners)
-  );
-
-  if (partnersCache.isEmpty()) {
+  if (SHEET_CACHE.Partners.isEmpty()) {
     const partners = dv360.listPartners({ limit: 100 })
       .map((partner) => [
         `${partner.displayName} (${partner.partnerId})`,
@@ -19,16 +20,12 @@ function loadPartners() {
         partner.displayName
       ]);
     
-    partnersCache.set(partners);
+      SHEET_CACHE.Partners.set(partners);
   }
 }
 
 function loadAdvertisers(partnerId: string) {
-  const advertisersCache = new SheetCache(
-    SheetUtils.getOrCreateSheet(Config.CacheSheetName.Advertisers)
-  );
-
-  let advertisers = advertisersCache.lookup(partnerId, 1);
+  let advertisers = SHEET_CACHE.Advertisers.lookup(partnerId, 1);
   if (! advertisers.length) {
     advertisers = dv360.listAdvertisers(partnerId, { limit: 10 })
       .map((advertiser) => [
@@ -39,18 +36,14 @@ function loadAdvertisers(partnerId: string) {
       ]);
     
     // Do not overwrite other cached advertisers, use ".append" 
-    advertisersCache.append(advertisers);
+    SHEET_CACHE.Advertisers.append(advertisers);
   }
 
   return advertisers;
 }
 
 function loadCampaigns(advertiserId: string) {
-  const campaignsCache = new SheetCache(
-    SheetUtils.getOrCreateSheet(Config.CacheSheetName.Campaigns)
-  );
-
-  let campaigns = campaignsCache.lookup(advertiserId, 1);
+  let campaigns = SHEET_CACHE.Campaigns.lookup(advertiserId, 1);
   if (!campaigns.length) {
     campaigns = dv360.listCampaigns(advertiserId, { limit: 10 })
       .map((campaign) => [
@@ -61,7 +54,7 @@ function loadCampaigns(advertiserId: string) {
       ]);
     
     // Do not overwrite other cached campaigns, use ".append" 
-    campaignsCache.append(campaigns);
+    SHEET_CACHE.Campaigns.append(campaigns);
   }
 
   return campaigns;
@@ -105,11 +98,8 @@ const partnerChangedHandler: OnEditHandler = {
 
     const partnerName = '' + range.getValues()[0];
     console.log(`Partner name: ${partnerName}`);
-    const partnerCache = new SheetCache(
-      SheetUtils.getOrCreateSheet(Config.CacheSheetName.Partners)
-    );
-    
-    const partnerValues = partnerCache.find(partnerName, 0);
+
+    const partnerValues = SHEET_CACHE.Partners.find(partnerName, 0);
     console.log('Partner: ', partnerValues);
     if (partnerValues) {
       const partnerId = "" + partnerValues[1];
