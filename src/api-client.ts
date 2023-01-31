@@ -59,9 +59,7 @@ export abstract class ApiClient {
     payload?: Record<string, any>
   ) {
     const res = this.fetchResponse(url, options, payload);
-    const blob = res.getBlob();
-    const unpacked = Utilities.unzip(blob);
-    return unpacked;
+    return res.getBlob();
   }
 
   /**

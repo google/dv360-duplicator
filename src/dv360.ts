@@ -12,6 +12,7 @@
 */
 
 import { ApiClient } from './api-client';
+import { SheetUtils } from './sheets';
 
 interface ResourcePage {
   nextPageToken?: string;
@@ -203,10 +204,10 @@ export class DV360 extends ApiClient {
         parentEntityFilter: {
           fileType: [
             'FILE_TYPE_CAMPAIGN',
-            'FILE_TYPE_INSERTION_ORDER'
-            // "FILE_TYPE_LINE_ITEM",
-            // "FILE_TYPE_AD_GROUP",
-            // "FILE_TYPE_AD"
+            'FILE_TYPE_INSERTION_ORDER',
+            'FILE_TYPE_LINE_ITEM',
+            'FILE_TYPE_AD_GROUP',
+            'FILE_TYPE_AD'
           ],
           filterType: 'FILTER_TYPE_NONE',
           filterIds: []
@@ -216,29 +217,28 @@ export class DV360 extends ApiClient {
     return downloadOperation;
   }
 
-  protected waitForDownloadOperationResource(downloadOperationName: string): Promise<string> {
+  protected waitForDownloadOperationResource(downloadOperationName: string) {
     const operationResourceUrl = this.getUrl(downloadOperationName);
     const initialDelay = 2000;
     const maxRetries = 10;
     const delayMultiplier = 2;
+
     let downloadOperation;
-    return new Promise((resolve, reject) => {
-      let delay = initialDelay;
-      let tryCount = 0;
-      while (tryCount <= maxRetries) {
-        downloadOperation = this.fetchEntity(operationResourceUrl);
-        Logger.log(downloadOperation);
-        if (downloadOperation.done === true) {
-          resolve(downloadOperation.response.resourceName);
-        }
-        Logger.log(`Backing off for ${delay}ms`);
-        Utilities.sleep(delay);
-        tryCount++;
-        delay *= delayMultiplier;
+    let delay = initialDelay;
+    let tryCount = 0;
+    while (tryCount <= maxRetries) {
+      downloadOperation = this.fetchEntity(operationResourceUrl);
+      Logger.log(downloadOperation);
+      if (downloadOperation.done) {
+        return downloadOperation.response.resourceName;
       }
-      Logger.log(`Try limit exceeded after ${tryCount} tries`);
-      reject();
-    });
+      Logger.log(`Backing off for ${delay}ms`);
+      Utilities.sleep(delay);
+      tryCount++;
+      delay *= delayMultiplier;
+    }
+    Logger.log(`Try limit exceeded after ${tryCount} tries`);
+    return undefined;
   }
 
   downloadMedia(resourceName: string): Object {
@@ -247,14 +247,28 @@ export class DV360 extends ApiClient {
       `download/${resourceName}?alt=media`
     ).replace('/v2', '');
     const downloadMedia = this.fetchBlob(downloadMediaUrl);
+    //TODO move somewhere else afterwards
+    downloadMedia.setContentType('application/zip');
+    var unZippedfiles = Utilities.unzip(downloadMedia);
+    unZippedfiles.forEach((blob) => {
+      const fileName = blob.getName();
+      const values = Utilities.parseCsv(blob.getDataAsString());
+      Logger.log(`Putting ${values.length} rows into sheet ${fileName}`);
+      const targetSheet = SheetUtils.getOrCreateSheet(fileName);
+      targetSheet.clear();
+      targetSheet
+        .getRange(1, 1, values.length, values[0].length)
+        .setValues(values);
+    });
+    // var newDriveFile = DriveApp.createFile(unZippedfile[0]);
     return downloadMedia;
   }
 
-  async downloadSdf(advertiserId: string): Promise<Object> {
+  downloadSdf(advertiserId: string): Object {
     const downloadTask = this.createSdfDownloadOperation(advertiserId);
-    const resourceName = await this.waitForDownloadOperationResource(
-      downloadTask.name
-    );
+    const resourceName = this.waitForDownloadOperationResource(downloadTask.name);
+    // const resourceName = 'sdfdownloadtasks/media/70107568';
+    Logger.log(`Downloading media ${resourceName} and putting it into sheets`);
     return this.downloadMedia(resourceName);
   }
 }
