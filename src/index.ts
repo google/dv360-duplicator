@@ -4,6 +4,7 @@ import { SheetUtils } from './sheets';
 import { SheetCache } from './sheet-cache';
 import { CacheUtils } from './cache-utils';
 import { onEditEvent, OnEditHandler } from './trigger';
+import { TriggerUtils } from './trigger-utils';
 
 /**
  * Global cache container
@@ -45,13 +46,18 @@ function loadAdvertisers(partnerId: string) {
 function loadCampaigns(advertiserId: string) {
   let campaigns = SHEET_CACHE.Campaigns.lookup(advertiserId, 1);
   if (!campaigns.length) {
-    campaigns = dv360.listCampaigns(advertiserId, { limit: 10 })
-      .map((campaign) => [
-        `${campaign.displayName} (${campaign.campaignId})`,
-        campaign.advertiserId,
-        campaign.campaignId,
-        campaign.displayName
-      ]);
+    const dv360campaigns = dv360.listCampaigns(advertiserId, { limit: 10 });
+    if (campaigns && campaigns.length && campaigns[0]) {
+      campaigns = dv360campaigns.map((campaign) => {
+        console.log('campaign', campaign); 
+        return [
+          `${campaign.displayName} (${campaign.campaignId})`,
+          campaign.advertiserId,
+          campaign.campaignId,
+          campaign.displayName
+        ]
+      });
+    }
     
     // Do not overwrite other cached campaigns, use ".append" 
     SHEET_CACHE.Campaigns.append(campaigns);
@@ -72,141 +78,13 @@ function teardown() {
   onEditEvent.uninstall();
 }
 
-const partnerChangedHandler: OnEditHandler = {
-  shouldRun({ range }) {
-    return (
-      range.getSheet().getName() === 'Campaigns' &&
-      range.getColumn() === 1 &&
-      !!range.getValue()
-    );
-  },
-  run({ range }) {
-    console.log('Running partner changed handler');
-    console.log(`Source range: [${range.getColumn()}, ${range.getRow()}]`);
-    const campaignSheet = range.getSheet();
-    const targetRange = campaignSheet
-      .getRange(range.getRow(), range.getColumn() + 1)
-      .clearDataValidations()
-      .clear();
-    
-    // Inform User about WIP
-    targetRange.setValue('Loading ...');
-    
-    console.log(
-      `Target range: [${targetRange.getColumn()}, ${targetRange.getRow()}]`
-    );
+const partnerChangedHandler = TriggerUtils.generateOnEditHandler(
+  'Campaigns', 1, 1, SHEET_CACHE.Partners, loadAdvertisers
+);
 
-    const partnerName = '' + range.getValues()[0];
-    console.log(`Partner name: ${partnerName}`);
+const advertiserChangedHandler = TriggerUtils.generateOnEditHandler(
+  'Campaigns', 2, 2, SHEET_CACHE.Advertisers, loadCampaigns
+);
 
-    const partnerValues = SHEET_CACHE.Partners.find(partnerName, 0);
-    console.log('Partner: ', partnerValues);
-    if (partnerValues) {
-      const partnerId = "" + partnerValues[1];
-      console.log(partnerId);
-      try {
-        const advertisers = loadAdvertisers(partnerId);
-        console.log('Advertisers: ', advertisers);
-        const names = advertisers.map(
-          (advertiser) => advertiser && Array.isArray(advertiser) && advertiser.length
-            ? `${advertiser[1]} (${advertiser[0]})` 
-            : ''
-        );
-        console.log('Advertiser names', names);
-        SheetUtils.setRangeDropDown(targetRange, names);
-      } catch (e: any) {
-        SpreadsheetApp.getUi().alert('Error accured, try again...');
-        range.setValue('');
-        Logger.log(e?.message);
-      }
-
-      targetRange.setValue('');
-    }
-  }
-};
-
-/*
-const advertiserChangedHandler: OnEditHandler = {
-  shouldRun({ range }) {
-    return (
-      range.getSheet().getName() === 'Campaigns' &&
-      range.getColumn() === 2 &&
-      !!range.getValue()
-    );
-  },
-  run({ range }) {
-    console.log('Running advertiser changed handler');
-    console.log(`Source range: [${range.getColumn()}, ${range.getRow()}]`);
-    const campaignSheet = range.getSheet();
-    const targetRange = campaignSheet
-      .getRange(range.getRow(), range.getColumn() + 1)
-      .clearDataValidations()
-      .clear();
-    console.log(
-      `Target range: [${targetRange.getColumn()}, ${targetRange.getRow()}]`
-    );
-
-    const advertiserName = '' + range.getValues()[0];
-    console.log(`Advertiser name: ${advertiserName}`);
-    const advertiserSheet =
-      SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
-        Config.CacheSheetName.Advertisers
-      );
-    const values = advertiserSheet?.getSheetValues(1, 1, -1, 3);
-    const advertiserValues = values?.find(([name]) => name === advertiserName);
-    console.log('Advertiser: ', values);
-    if (advertiserValues) {
-      const advertiserId = advertiserValues[2];
-      console.log(`Selected AdvertiserId ${advertiserId}`);
-      const campaigns = loadCampaigns(advertiserId);
-      const names = campaigns.map(
-        (campaign) => `${campaign.displayName} (${campaign.campaignId})`
-      );
-      console.log(`Campaigns fetched ${names}`);
-      SheetUtils.setRangeDropDown(targetRange, names);
-    }
-  }
-};
-*/
 onEditEvent.addHandler(partnerChangedHandler);
-//onEditEvent.addHandler(advertiserChangedHandler);
-
-/*
-function test_SheetCache() {
-    const cache = new SheetCache(SheetUtils.getOrCreateSheet('Cache sheet'));
-    cache.set([
-        [1, 2, 'A123'],
-        [11, 22, 'T123'],
-    ]); 
-    cache.append([[333, 444, 'T123']]);
-    cache.append([[11, 444, 'T321-1']]);
-    cache.append([[99, 22, 'T321-2']]);
-      
-    const cachedValue1 = cache.lookup(11, 0);
-    console.log('cachedValue1', cachedValue1);
-    
-    const cachedValue2 = cache.lookup(22, 1);
-    console.log('cachedValue1', cachedValue2);
-
-    const cachedValue3 = cache.lookup('22', 1);
-    console.log('cachedValue1', cachedValue3);
-  
-    const cachedValue4 = cache.lookup('T123', 2);
-    console.log('cachedValue1', cachedValue4);
-}
-
-function test_loadCampaigns() {
-  loadCampaigns('2012934');
-  loadCampaigns('2012934');
-
-  loadCampaigns('676945619');
-}
-
-function test_loadAdvertisers() {
-  loadAdvertisers('2015636');
-  loadAdvertisers('2015636');
-
-  loadAdvertisers('1839756');
-}
-
-*/
+onEditEvent.addHandler(advertiserChangedHandler);

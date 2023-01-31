@@ -81,7 +81,7 @@ export class SheetCache {
         key: CacheValue, 
         index: number, 
         returnOnlyOne: boolean = false
-    ): Array<CacheValue>|Array<Array<CacheValue>> {
+    ): Array<Array<CacheValue>> {
         if (this.isEmpty()) {
             return [];
         }
@@ -104,9 +104,9 @@ export class SheetCache {
         }
 
         const searchFunc = (row: Array<CacheValue>) => row[index] == key;
-        const result = returnOnlyOne ? data.find(searchFunc) : data.filter(searchFunc);
+        const result = returnOnlyOne ? [ data.find(searchFunc) as Array<CacheValue> ] : data.filter(searchFunc);
 
-        return result ?? [];
+        return result;
     }
 
     /**
@@ -116,7 +116,8 @@ export class SheetCache {
      * @param index The index of the column where we search for it
      */
     find(key: CacheValue, index: number) {
-        return this.lookup(key, index, true);
+        const result = this.lookup(key, index, true);
+        return result.length ? result[0] : [];
     }
 
     /**
