@@ -12,6 +12,7 @@
 */
 
 import { ApiClient } from './api-client';
+import { SheetUtils } from './sheets';
 
 interface ResourcePage {
   nextPageToken?: string;
@@ -88,7 +89,7 @@ export class DV360 extends ApiClient {
     options?: ListPartnersOptions
   ): Dv360PartnersPage {
     const { pageSize, filter, orderBy } = options ?? {};
-    return this.fetchUrl(
+    return this.fetchEntity(
       this.getUrl('partners', { pageToken, pageSize, filter, orderBy })
     );
   }
@@ -118,7 +119,7 @@ export class DV360 extends ApiClient {
     options?: ListAdvertiserOptions
   ): Dv360AdvertisersPage {
     const { pageSize, filter, orderBy } = options ?? {};
-    return this.fetchUrl(
+    return this.fetchEntity(
       this.getUrl('advertisers', {
         partnerId,
         pageToken,
@@ -158,7 +159,7 @@ export class DV360 extends ApiClient {
     options?: ListCampaignOptions
   ): Dv360CampaignsPage {
     const { pageSize, filter, orderBy } = options ?? {};
-    return this.fetchUrl(
+    return this.fetchEntity(
       this.getUrl(`advertisers/${advertiserId}/campaigns`, {
         pageToken,
         pageSize,
@@ -189,5 +190,85 @@ export class DV360 extends ApiClient {
       campaigns = campaigns.slice(0, options.limit);
     }
     return campaigns;
+  }
+
+  protected createSdfDownloadOperation(advertiserId: string) {
+    const downloadOperation = this.fetchEntity(
+      this.getUrl('sdfdownloadtasks'),
+      {
+        method: 'post'
+      },
+      {
+        version: 'SDF_VERSION_5_5',
+        advertiserId: advertiserId,
+        parentEntityFilter: {
+          fileType: [
+            'FILE_TYPE_CAMPAIGN',
+            'FILE_TYPE_INSERTION_ORDER',
+            'FILE_TYPE_LINE_ITEM',
+            'FILE_TYPE_AD_GROUP',
+            'FILE_TYPE_AD'
+          ],
+          filterType: 'FILTER_TYPE_NONE',
+          filterIds: []
+        }
+      }
+    );
+    return downloadOperation;
+  }
+
+  protected waitForDownloadOperationResource(downloadOperationName: string) {
+    const operationResourceUrl = this.getUrl(downloadOperationName);
+    const initialDelay = 2000;
+    const maxRetries = 10;
+    const delayMultiplier = 2;
+
+    let downloadOperation;
+    let delay = initialDelay;
+    let tryCount = 0;
+    while (tryCount <= maxRetries) {
+      downloadOperation = this.fetchEntity(operationResourceUrl);
+      Logger.log(downloadOperation);
+      if (downloadOperation.done) {
+        return downloadOperation.response.resourceName;
+      }
+      Logger.log(`Backing off for ${delay}ms`);
+      Utilities.sleep(delay);
+      tryCount++;
+      delay *= delayMultiplier;
+    }
+    Logger.log(`Try limit exceeded after ${tryCount} tries`);
+    return undefined;
+  }
+
+  downloadMedia(resourceName: string): Object {
+    //url doesn't contain version, just /media/
+    const downloadMediaUrl = this.getUrl(
+      `download/${resourceName}?alt=media`
+    ).replace('/v2', '');
+    const downloadMedia = this.fetchBlob(downloadMediaUrl);
+    //TODO move somewhere else afterwards
+    downloadMedia.setContentType('application/zip');
+    var unZippedfiles = Utilities.unzip(downloadMedia);
+    unZippedfiles.forEach((blob) => {
+      const fileName = blob.getName();
+      const values = Utilities.parseCsv(blob.getDataAsString());
+      Logger.log(`Putting ${values.length} rows into sheet ${fileName}`);
+      const targetSheet = SheetUtils.getOrCreateSheet(fileName);
+      targetSheet.clear();
+      targetSheet
+        .getRange(1, 1, values.length, values[0].length)
+        .setValues(values);
+    });
+    // var newDriveFile = DriveApp.createFile(unZippedfile[0]);
+    return downloadMedia;
+  }
+
+  downloadSdf(advertiserId: string): Object {
+    const downloadTask = this.createSdfDownloadOperation(advertiserId);
+    const resourceName = this.waitForDownloadOperationResource(downloadTask.name);
+    // const resourceName = 'sdfdownloadtasks/media/70107568';
+    Logger.log(`Downloading media ${resourceName} and putting it into sheets`);
+    return this.downloadMedia(resourceName);
   }
 }

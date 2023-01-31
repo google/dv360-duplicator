@@ -163,3 +163,7 @@ function test_SheetCache() {
     const cachedValue4 = cache.lookup('T123', 2);
     console.log('cachedValue1', cachedValue4);
 }     
+
+function test() {
+  const sdfMedia = dv360.downloadSdf('676945619');
+}
