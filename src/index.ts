@@ -140,6 +140,30 @@ const advertiserChangedHandler: OnEditHandler = {
 onEditEvent.addHandler(partnerChangedHandler);
 onEditEvent.addHandler(advertiserChangedHandler);
 
+import { SheetCache } from "./sheet-cache";
+function test_SheetCache() {
+    const cache = new SheetCache(SheetUtils.getOrCreateSheet('Cache sheet'));
+    cache.set([
+        [1, 2, 'A123'],
+        [11, 22, 'T123'],
+    ]); 
+    cache.append([[333, 444, 'T123']]);
+    cache.append([[11, 444, 'T321-1']]);
+    cache.append([[99, 22, 'T321-2']]);
+      
+    const cachedValue1 = cache.lookup(11, 0);
+    console.log('cachedValue1', cachedValue1);
+    
+    const cachedValue2 = cache.lookup(22, 1);
+    console.log('cachedValue1', cachedValue2);
+
+    const cachedValue3 = cache.lookup('22', 1);
+    console.log('cachedValue1', cachedValue3);
+  
+    const cachedValue4 = cache.lookup('T123', 2);
+    console.log('cachedValue1', cachedValue4);
+}     
+
 function test() {
   const sdfMedia = dv360.downloadSdf('676945619');
 }
