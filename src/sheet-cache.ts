@@ -86,14 +86,7 @@ export class SheetCache {
             return [];
         }
 
-        const data = this.cacheSheet
-            .getRange(
-                1, 1,
-                this.cacheSheet.getLastRow(),
-                this.cacheSheet.getLastColumn()
-            )
-            .getValues();
-
+        const data = this.getAll();
         if (!data || !data.length) {
             Logger.log(`Empty cache in sheet "${this.cacheSheet.getName()}"`);
             return [];
@@ -118,6 +111,20 @@ export class SheetCache {
     find(key: CacheValue, index: number) {
         const result = this.lookup(key, index, true);
         return result.length ? result[0] : [];
+    }
+
+    getAll() {
+        if (this.isEmpty()) {
+            return [];
+        }
+
+        return this.cacheSheet
+            .getRange(
+                1, 1,
+                this.cacheSheet.getLastRow(),
+                this.cacheSheet.getLastColumn()
+            )
+            .getValues();
     }
 
     /**
