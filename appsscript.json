@@ -6,6 +6,7 @@
   "oauthScopes": [
     "https://www.googleapis.com/auth/display-video",
     "https://www.googleapis.com/auth/script.external_request",
-    "https://www.googleapis.com/auth/spreadsheets.currentonly"
+    "https://www.googleapis.com/auth/spreadsheets.currentonly",
+    "https://www.googleapis.com/auth/script.scriptapp"
   ]
 }
