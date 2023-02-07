@@ -17,30 +17,25 @@ interface ResourcePage {
   nextPageToken?: string;
 }
 
-interface Dv360Entity {
-  [key: string]: string,
-}
-
-export interface Dv360Partner extends Dv360Entity {
+export interface Dv360Partner {
   displayName: string;
   partnerId: string;
 }
+interface Dv360PartnersPage extends ResourcePage {
+  partners: Dv360Partner[];
+}
 
-export interface Dv360Advertiser extends Dv360Entity {
+export interface Dv360Advertiser {
   displayName: string;
   partnerId: string;
   advertiserId: string;
 }
 
-export interface Dv360Campaign extends Dv360Entity {
+export interface Dv360Campaign {
   displayName: string;
   partnerId: string;
   advertiserId: string;
   campaignId: string;
-}
-
-interface Dv360PartnersPage extends ResourcePage {
-  partners: Dv360Partner[];
 }
 
 interface Dv360AdvertisersPage extends ResourcePage {
@@ -77,8 +72,6 @@ export interface ListCampaignOptions extends PagingOptions {
  * DV360 API Wrapper class. Implements DV360 API calls.
  */
 export class DV360 extends ApiClient {
-  [key: string]: Function | string;
-  
   /**
    * Set the DV360 wrapper configuration
    *

@@ -61,9 +61,7 @@ export const TriggerUtils = {
                   } catch (e: any) {
                     SpreadsheetApp.getUi().alert('Error accured, try again...');
                     range.setValue('');
-                    
-                    console.error(e);
-                    console.error(e.stack);
+                    console.log(e);
                   }
                   
                   targetRange.setValue(defaultDropdownValue);
