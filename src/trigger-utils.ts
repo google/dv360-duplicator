@@ -1,8 +1,23 @@
-import { OnEditHandler } from "./trigger";
+import { onEditEvent, OnEditHandler } from "./trigger";
 import { SheetCache, CacheValue } from "./sheet-cache";
 import { SheetUtils } from "./sheets";
 
 export const TriggerUtils = {
+    /**
+     * Generate onEdit trigger for the parent entity drop downs with 
+     *  sub-entities (e.g. if the partner - parent is changed, then automatically 
+     *  load the advertisers)
+     *
+     * @param sheetName The sheet name where we wait for the edit events
+     * @param columnNumber Index of the column where we wait for the event
+     *  (indexes start from 1)
+     * @param parentIdIndex Column index of the parnet entity ID in the "cache"
+     * @param cache Cache object (see SheetCache)
+     * @param loadFunction Function that returns an array of values for the 
+     *  sub-entity drop down
+     * @returns Correct handler to be added in the installable trigger 
+     *  (e.g. `onEditEvent.addHandler(handler)`)
+     */
     generateOnEditHandler(
         sheetName: string, 
         columnNumber: number,
@@ -42,6 +57,8 @@ export const TriggerUtils = {
                 if (parentValues) {
                   const parentId = "" + parentValues[parentIdIndex];
                   console.log('parentId', parentId);
+                  let triggerOnInit = false;
+
                   try {
                     const children = loadFunction(parentId);
                     console.log('Children: ', children);
@@ -56,15 +73,26 @@ export const TriggerUtils = {
                     // Usability feature: if only one element in drop down, 
                     // then set it as a selected value
                     if (1 === names.length) {
-                        defaultDropdownValue = names[0];
+                      defaultDropdownValue = names[0];
+                      triggerOnInit = true;
                     }
                   } catch (e: any) {
                     SpreadsheetApp.getUi().alert('Error accured, try again...');
+                    // On Error make all selects blank
                     range.setValue('');
+                    targetRange.setValue('');
+                    // Log error and stacktrace
                     console.log(e);
+                    console.log(e.stack);
                   }
                   
                   targetRange.setValue(defaultDropdownValue);
+                  // Usability feature: if only one element in drop down, 
+                  // then (set it as a selected value and) trigger onEdit to load
+                  // sub-entities for that one element.
+                  if (triggerOnInit) {
+                    onEditEvent({range: targetRange});
+                  }
                 }
             }
         };

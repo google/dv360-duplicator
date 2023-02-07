@@ -28,13 +28,15 @@ function loadPartners() {
 function loadAdvertisers(partnerId: string) {
   let advertisers = SHEET_CACHE.Advertisers.lookup(partnerId, 1);
   if (! advertisers.length) {
-    advertisers = dv360.listAdvertisers(partnerId, { limit: 10 })
-      .map((advertiser) => [
+    const dv360advertisers = dv360.listAdvertisers(partnerId, { limit: 10 });
+    if (dv360advertisers && dv360advertisers.length && dv360advertisers[0]) {
+      advertisers = dv360advertisers.map((advertiser) => [
         `${advertiser.displayName} (${advertiser.advertiserId})`,
         advertiser.partnerId,
         advertiser.advertiserId,
         advertiser.displayName
       ]);
+    }
     
     // Do not overwrite other cached advertisers, use ".append" 
     SHEET_CACHE.Advertisers.append(advertisers);
