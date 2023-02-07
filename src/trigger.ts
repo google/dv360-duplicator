@@ -1,3 +1,7 @@
+export type SheetsOnEditEventSimplified = {
+  range: GoogleAppsScript.Spreadsheet.Range,
+};
+
 /**
  * Interface for a handler. This supports filtering all events for those that
  * should be handled.
@@ -8,12 +12,12 @@ export interface OnEditHandler {
    * @param event the event to inspect
    * @returns true if the handler should run, false otherwise
    */
-  shouldRun: (event: GoogleAppsScript.Events.SheetsOnEdit) => boolean;
+  shouldRun: (event: SheetsOnEditEventSimplified) => boolean;
   /**
    * Runs the actual handler.
    * @param event the event to handle
    */
-  run: (event: GoogleAppsScript.Events.SheetsOnEdit) => void;
+  run: (event: SheetsOnEditEventSimplified) => void;
 }
 
 const onEditHandlers: OnEditHandler[] = [];
@@ -23,7 +27,7 @@ const onEditHandlers: OnEditHandler[] = [];
  * handlers should be executed.
  * @param event an edit event
  */
-export function onEditEvent(event: GoogleAppsScript.Events.SheetsOnEdit) {
+export function onEditEvent(event: SheetsOnEditEventSimplified) {
   onEditHandlers.forEach(
     (handler) => handler.shouldRun(event) && handler.run(event)
   );
