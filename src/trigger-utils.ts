@@ -1,6 +1,6 @@
 import { onEditEvent, OnEditHandler } from "./trigger";
 import { SheetCache, CacheValue } from "./sheet-cache";
-import { SheetUtils } from "./sheets";
+import { SheetUtils } from "./sheet-utils";
 
 export const TriggerUtils = {
     /**
@@ -23,7 +23,8 @@ export const TriggerUtils = {
         columnNumber: number,
         parentIdIndex: number,
         cache: SheetCache,
-        loadFunction: ((x: string) => CacheValue[] | CacheValue[][])
+        loadFunction: ((x: string) => CacheValue[] | CacheValue[][]),
+        loadingStatusMessage?: string,
     ): OnEditHandler {
         return {
             shouldRun({ range }) {
@@ -44,6 +45,7 @@ export const TriggerUtils = {
                 
                 // Inform User about WIP
                 targetRange.setValue('Loading ...');
+                SheetUtils.showProgressMessage(loadingStatusMessage);
                 
                 console.log(
                   `Target range: [${targetRange.getColumn()}, ${targetRange.getRow()}]`
@@ -77,16 +79,19 @@ export const TriggerUtils = {
                       triggerOnInit = true;
                     }
                   } catch (e: any) {
-                    SpreadsheetApp.getUi().alert('Error accured, try again...');
+                    const message = 'Error accured, try again...';
+                    SpreadsheetApp.getUi().alert(message);
                     // On Error make all selects blank
                     range.setValue('');
                     targetRange.setValue('');
+                    SheetUtils.hideProgressMessage(message);
                     // Log error and stacktrace
                     console.log(e);
                     console.log(e.stack);
                   }
                   
                   targetRange.setValue(defaultDropdownValue);
+                  SheetUtils.hideProgressMessage('Done');
                   // Usability feature: if only one element in drop down, 
                   // then (set it as a selected value and) trigger onEdit to load
                   // sub-entities for that one element.

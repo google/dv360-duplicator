@@ -1,6 +1,6 @@
 import { Config } from './config';
 import { DV360 } from './dv360';
-import { SheetUtils } from './sheets';
+import { SheetUtils } from './sheet-utils';
 import { SheetCache } from './sheet-cache';
 import { CacheUtils } from './cache-utils';
 import { onEditEvent, OnEditHandler } from './trigger';
@@ -78,13 +78,22 @@ function teardown() {
 }
 
 const partnerChangedHandler = TriggerUtils.generateOnEditHandler(
-  'Campaigns', 1, 1, SHEET_CACHE.Partners, loadAdvertisers
+  Config.WorkingSheets.campaigns,
+  1,
+  1,
+  SHEET_CACHE.Partners,
+  loadAdvertisers,
+  'Loading advertisers... this might take some time'
 );
 
 const advertiserChangedHandler = TriggerUtils.generateOnEditHandler(
-  'Campaigns', 2, 2, SHEET_CACHE.Advertisers, loadCampaigns
+  Config.WorkingSheets.campaigns,
+  2,
+  2,
+  SHEET_CACHE.Advertisers,
+  loadCampaigns,
+  'Loading campaigns... this might take some time'
 );
 
 onEditEvent.addHandler(partnerChangedHandler);
 onEditEvent.addHandler(advertiserChangedHandler);
-

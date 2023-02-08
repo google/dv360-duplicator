@@ -4,4 +4,7 @@ export const Config = {
         Advertisers: '[DO NOT EDIT] Advertisers',
         Campaigns: '[DO NOT EDIT] Campaigns',
     },
+    WorkingSheets: {
+        'campaigns': 'Campaigns',
+    }
 };

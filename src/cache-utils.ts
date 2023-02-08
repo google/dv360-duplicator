@@ -1,5 +1,5 @@
 import { SheetCache } from './sheet-cache';
-import { SheetUtils } from './sheets';
+import { SheetUtils } from './sheet-utils';
 
 export const CacheUtils = {
     /**
