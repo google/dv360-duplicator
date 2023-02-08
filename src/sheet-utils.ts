@@ -36,7 +36,9 @@ export const SheetUtils = {
   ) {
     SpreadsheetApp.getUi()
       .showModelessDialog(
-        HtmlService.createHtmlOutput(message),
+        HtmlService.createHtmlOutput(message)
+          .setWidth(250)
+          .setHeight(90),
         title
       );
   },
