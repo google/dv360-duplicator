@@ -50,15 +50,12 @@ function loadCampaigns(advertiserId: string) {
   if (!campaigns.length) {
     const dv360campaigns = dv360.listCampaigns(advertiserId, { limit: 10 });
     if (campaigns && campaigns.length && campaigns[0]) {
-      campaigns = dv360campaigns.map((campaign) => {
-        console.log('campaign', campaign); 
-        return [
+      campaigns = dv360campaigns.map((campaign) => [
           `${campaign.displayName} (${campaign.campaignId})`,
           campaign.advertiserId,
           campaign.campaignId,
           campaign.displayName
-        ]
-      });
+        ]);
     }
     
     // Do not overwrite other cached campaigns, use ".append" 
@@ -90,3 +87,4 @@ const advertiserChangedHandler = TriggerUtils.generateOnEditHandler(
 
 onEditEvent.addHandler(partnerChangedHandler);
 onEditEvent.addHandler(advertiserChangedHandler);
+
