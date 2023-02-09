@@ -71,15 +71,20 @@ export abstract class ApiClient {
 
     console.log(`Before fetch URL: ${url}`);
     console.log(`Before fetch payload: ${requestOptions.payload}`);
-    const res = UrlFetchApp.fetch(url, requestOptions);
+    try {
+      const res = UrlFetchApp.fetch(url, requestOptions);
+      if (200 != res.getResponseCode() && 204 != res.getResponseCode()) {
+        Logger.log('HTTP code: ' + res.getResponseCode());
+        Logger.log('API error: ' + res.getContentText());
+        Logger.log('URL: ' + url);
+        throw Error(res.getContentText());
+      }
 
-    if (200 != res.getResponseCode() && 204 != res.getResponseCode()) {
-      Logger.log('HTTP code: ' + res.getResponseCode());
-      Logger.log('API error: ' + res.getContentText());
-      Logger.log('URL: ' + url);
-      throw new Error(res.getContentText());
+      return res.getContentText() ? JSON.parse(res.getContentText()) : {};
+    } catch (e: any) {
+      console.log(e);
+      console.log(e.stack);
+      throw e;
     }
-
-    return res.getContentText() ? JSON.parse(res.getContentText()) : {};
   }
 }

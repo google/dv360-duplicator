@@ -12,6 +12,7 @@
 */
 
 import { ApiClient } from './api-client';
+import { Config } from './config';
 
 interface ResourcePage {
   nextPageToken?: string;
@@ -178,6 +179,7 @@ export class DV360 extends ApiClient {
         nextPageToken,
         options
       );
+
       campaigns = campaigns.concat(response.campaigns);
       nextPageToken = response.nextPageToken;
     } while (

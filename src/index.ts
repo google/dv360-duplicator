@@ -1,10 +1,9 @@
 import { Config } from './config';
 import { DV360 } from './dv360';
-import { SheetUtils } from './sheets';
-import { SheetCache } from './sheet-cache';
 import { CacheUtils } from './cache-utils';
-import { onEditEvent, OnEditHandler } from './trigger';
+import { onEditEvent } from './trigger';
 import { TriggerUtils } from './trigger-utils';
+import { DV360Utils } from './dv360-utils';
 
 /**
  * Global cache container
@@ -48,8 +47,19 @@ function loadAdvertisers(partnerId: string) {
 function loadCampaigns(advertiserId: string) {
   let campaigns = SHEET_CACHE.Campaigns.lookup(advertiserId, 1);
   if (!campaigns.length) {
-    const dv360campaigns = dv360.listCampaigns(advertiserId, { limit: 10 });
-    if (campaigns && campaigns.length && campaigns[0]) {
+    const dv360campaigns = dv360.listCampaigns(
+      advertiserId,
+      {
+        limit: 10,
+        // List all campaigns
+        filter: DV360Utils.generateFilterString(
+          'entityStatus',
+          Config.DV360DefaultFilters.CampaignStatus
+        ),
+      }
+    );
+
+    if (dv360campaigns && dv360campaigns.length && dv360campaigns[0]) {
       campaigns = dv360campaigns.map((campaign) => {
         console.log('campaign', campaign); 
         return [
@@ -81,11 +91,11 @@ function teardown() {
 }
 
 const partnerChangedHandler = TriggerUtils.generateOnEditHandler(
-  'Campaigns', 1, 1, SHEET_CACHE.Partners, loadAdvertisers
+  Config.WorkingSheet.Campaigns, 1, 1, SHEET_CACHE.Partners, loadAdvertisers
 );
 
 const advertiserChangedHandler = TriggerUtils.generateOnEditHandler(
-  'Campaigns', 2, 2, SHEET_CACHE.Advertisers, loadCampaigns
+  Config.WorkingSheet.Campaigns, 2, 2, SHEET_CACHE.Advertisers, loadCampaigns
 );
 
 onEditEvent.addHandler(partnerChangedHandler);

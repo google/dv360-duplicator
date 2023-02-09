@@ -1,5 +1,5 @@
 {
-  "name": "dv360cp",
+  "name": "dv360-duplicator",
   "version": "0.0.1",
   "description": "",
   "main": "src/index.ts",
@@ -8,7 +8,7 @@
     "build:compile": "npx tsc",
     "build:bundle": "npx rollup -c rollup.config.mjs",
     "build": "npm run clean && npm run build:compile && npm run build:bundle",
-    "test": "npx jest src/",
+    "test": "npx jest src/*",
     "deploy": "npm run build && cp appsscript.json dist && clasp push"
   },
   "devDependencies": {
