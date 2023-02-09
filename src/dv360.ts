@@ -69,6 +69,12 @@ export interface ListCampaignOptions extends PagingOptions {
   limit?: number;
 }
 
+export class CsvFile {
+  constructor(
+    readonly fileName: string,
+    readonly values: Array<Array<string>>
+  ){}
+}
 /**
  * DV360 API Wrapper class. Implements DV360 API calls.
  */
@@ -241,7 +247,7 @@ export class DV360 extends ApiClient {
     return undefined;
   }
 
-  downloadMedia(resourceName: string): Object {
+  downloadMedia(resourceName: string): GoogleAppsScript.Base.Blob {
     //url doesn't contain version, just /media/
     const downloadMediaUrl = this.getUrl(
       `download/${resourceName}?alt=media`
@@ -249,26 +255,32 @@ export class DV360 extends ApiClient {
     const downloadMedia = this.fetchBlob(downloadMediaUrl);
     //TODO move somewhere else afterwards
     downloadMedia.setContentType('application/zip');
-    var unZippedfiles = Utilities.unzip(downloadMedia);
-    unZippedfiles.forEach((blob) => {
-      const fileName = blob.getName();
-      const values = Utilities.parseCsv(blob.getDataAsString());
-      Logger.log(`Putting ${values.length} rows into sheet ${fileName}`);
-      const targetSheet = SheetUtils.getOrCreateSheet(fileName);
-      targetSheet.clear();
-      targetSheet
-        .getRange(1, 1, values.length, values[0].length)
-        .setValues(values);
-    });
-    // var newDriveFile = DriveApp.createFile(unZippedfile[0]);
     return downloadMedia;
   }
 
-  downloadSdf(advertiserId: string): Object {
+  unzipSdfs(downloadMedia: GoogleAppsScript.Base.Blob): Array<CsvFile> {
+    var unZippedfiles = Utilities.unzip(downloadMedia);
+    const csvValues = Array<CsvFile>();
+    unZippedfiles.forEach((blob) => {
+      const fileName = blob.getName();
+      const values = Utilities.parseCsv(blob.getDataAsString());
+      Logger.log(`Found ${values.length} entities in file ${fileName}`);
+      csvValues.push(new CsvFile(fileName, values));
+    });
+    return csvValues;
+  }
+
+  downloadSdfs(advertiserId: string): Array<CsvFile> {
     const downloadTask = this.createSdfDownloadOperation(advertiserId);
-    const resourceName = this.waitForDownloadOperationResource(downloadTask.name);
-    // const resourceName = 'sdfdownloadtasks/media/70107568';
+    const resourceName = this.waitForDownloadOperationResource(
+      downloadTask.name
+    );
     Logger.log(`Downloading media ${resourceName} and putting it into sheets`);
-    return this.downloadMedia(resourceName);
+    const media = this.downloadMedia(resourceName);
+    return this.unzipSdfs(media);
+  }
+
+  uploadSdf() {
+    
   }
 }
