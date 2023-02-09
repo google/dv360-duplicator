@@ -12,7 +12,6 @@
 */
 
 import { ApiClient } from './api-client';
-import { Config } from './config';
 
 interface ResourcePage {
   nextPageToken?: string;
