@@ -279,8 +279,4 @@ export class DV360 extends ApiClient {
     const media = this.downloadMedia(resourceName);
     return this.unzipSdfs(media);
   }
-
-  uploadSdf() {
-    
-  }
 }
