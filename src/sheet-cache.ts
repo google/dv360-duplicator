@@ -95,7 +95,7 @@ export class SheetCache {
             .getValues();
 
         if (!data || !data.length) {
-            Logger.log(`Empty cache in sheet "${this.cacheSheet.getName()}"`);
+            console.log(`Empty cache in sheet "${this.cacheSheet.getName()}"`);
             return [];
         }
 

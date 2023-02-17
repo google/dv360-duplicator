@@ -87,9 +87,9 @@ export abstract class ApiClient {
     try {
       const res = UrlFetchApp.fetch(url, requestOptions);
       if (200 != res.getResponseCode() && 204 != res.getResponseCode()) {
-        Logger.log('HTTP code: ' + res.getResponseCode());
-        Logger.log('API error: ' + res.getContentText());
-        Logger.log('URL: ' + url);
+        console.log('HTTP code: ' + res.getResponseCode());
+        console.log('API error: ' + res.getContentText());
+        console.log('URL: ' + url);
         throw Error(res.getContentText());
       }
 
