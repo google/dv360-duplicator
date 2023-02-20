@@ -11,13 +11,13 @@
     limitations under the License.
 */
 
-export type logicalOperation = 'OR'|'AND';
+export type LogicalOperation = 'OR'|'AND';
 
 export const DV360Utils = {
     generateFilterString(
         field: string,
         values: string[],
-        logicalOperation: logicalOperation = 'OR'
+        logicalOperation: LogicalOperation = 'OR'
     ) {
         if (! field) {
             throw Error('Filtering field canot be empty');
