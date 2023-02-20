@@ -11,23 +11,23 @@
     limitations under the License.
 */
 
-import { SheetCache } from './sheet-cache';
-import { SheetUtils } from './sheet-utils';
+export type SdfEntityName = 
+    'Campaigns'
+    | 'InsertionOrders' 
+    | 'LineItems' 
+    | 'AdGroups'
+    | 'AdGroupAds';
 
-export const CacheUtils = {
+export const SdfUtils = {
     /**
-     * Create all needed cache instances
+     * Get the SDF from the sheet or if the sheet does not exists then download
+     *  it from DV360 API.
      * 
-     * @param entities Key-Value pairs for all cache entities to be created
+     * @param entity SDF for which DV360 entity should be returned.
+     * @param advertiserId Advertiser ID, used as prefix for the "cache" sheet 
+     *  name
      */
-    initCache(entities: { [key: string]: string }) {
-        const result: {[key: string]: SheetCache} = {};
-        Object.keys(entities).forEach((key: string) => {
-            result[key] = new SheetCache(
-                SheetUtils.getOrCreateSheet(entities[key])
-            );
-        });
-    
-        return result;
+    downloadSDFOrGetFromSheet(entity: SdfEntityName, advertiserId: string) {
+
     }
 }

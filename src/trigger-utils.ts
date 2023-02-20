@@ -13,7 +13,7 @@
 
 import { onEditEvent, OnEditHandler } from "./trigger";
 import { SheetCache, CacheValue } from "./sheet-cache";
-import { SheetUtils } from "./sheets";
+import { SheetUtils } from "./sheet-utils";
 
 export const TriggerUtils = {
     /**

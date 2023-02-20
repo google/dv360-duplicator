@@ -29,4 +29,18 @@ export const Config = {
             'ENTITY_STATUS_ARCHIVED',
         ],
     },
+    // A list of the column headers in the sheet that we allow to overwrite.
+    // On different levels this list will be different and according to format:
+    //  https://developers.google.com/display-video/api/structured-data-file/format
+    SdfAllowedFields: {
+        'v5.5': { // API version
+            Campaigns: [
+                'Name',
+                'Status',
+                'Campaign Budget',
+                'Campaign Start Date',
+                'Campaign End Date',
+            ],
+        }
+    }
 };

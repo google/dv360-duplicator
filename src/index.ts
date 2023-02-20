@@ -10,9 +10,9 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-
-import { Config } from './config';
 import { DV360 } from './dv360';
+import { SheetUtils } from './sheet-utils';
+import { Config } from './config';
 import { CacheUtils } from './cache-utils';
 import { onEditEvent } from './trigger';
 import { TriggerUtils } from './trigger-utils';
@@ -113,3 +113,26 @@ const advertiserChangedHandler = TriggerUtils.generateOnEditHandler(
 
 onEditEvent.addHandler(partnerChangedHandler);
 onEditEvent.addHandler(advertiserChangedHandler);
+
+function generateNewSDFForSelectedCampaigns() {
+  const sheetData = SheetUtils.readSheetAsJSON(Config.WorkingSheet.Campaigns);
+  if (! sheetData || !sheetData.length) {
+    // Nothing to generate
+    return;
+  }
+
+  sheetData.forEach((row) => {
+    // TODO: More Validation!!!
+
+    if (! ('Advertiser' in row)) {
+      throw Error('Advertiser is not defined');
+    }
+
+    const advertiserInfo = SHEET_CACHE.Advertiser.find(row['Advertiser'], 1);
+    if (! advertiserInfo || 4 != advertiserInfo.length || ! advertiserInfo[2]) {
+      throw Error(`Advertiser '${row['Advertiser']}' not defined or not found.`);
+    }
+
+    const advertiserId = advertiserInfo[2];
+  });
+}

@@ -12,6 +12,7 @@
 */
 
 import { ApiClient } from './api-client';
+import { CsvFile } from './csv-file';
 
 interface ResourcePage {
   nextPageToken?: string;
@@ -88,7 +89,7 @@ export class DV360 extends ApiClient {
     options?: ListPartnersOptions
   ): Dv360PartnersPage {
     const { pageSize, filter, orderBy } = options ?? {};
-    return this.fetchUrl(
+    return this.fetchEntity(
       this.getUrl('partners', { pageToken, pageSize, filter, orderBy })
     );
   }
@@ -118,7 +119,7 @@ export class DV360 extends ApiClient {
     options?: ListAdvertiserOptions
   ): Dv360AdvertisersPage {
     const { pageSize, filter, orderBy } = options ?? {};
-    return this.fetchUrl(
+    return this.fetchEntity(
       this.getUrl('advertisers', {
         partnerId,
         pageToken,
@@ -158,7 +159,7 @@ export class DV360 extends ApiClient {
     options?: ListCampaignOptions
   ): Dv360CampaignsPage {
     const { pageSize, filter, orderBy } = options ?? {};
-    return this.fetchUrl(
+    return this.fetchEntity(
       this.getUrl(`advertisers/${advertiserId}/campaigns`, {
         pageToken,
         pageSize,
@@ -190,5 +191,87 @@ export class DV360 extends ApiClient {
       campaigns = campaigns.slice(0, options.limit);
     }
     return campaigns;
+  }
+
+  protected createSdfDownloadOperation(advertiserId: string) {
+    const downloadOperation = this.fetchEntity(
+      this.getUrl('sdfdownloadtasks'),
+      {
+        method: 'post'
+      },
+      {
+        version: 'SDF_VERSION_5_5',
+        advertiserId: advertiserId,
+        parentEntityFilter: {
+          fileType: [
+            'FILE_TYPE_CAMPAIGN',
+            'FILE_TYPE_INSERTION_ORDER',
+            'FILE_TYPE_LINE_ITEM',
+            'FILE_TYPE_AD_GROUP',
+            'FILE_TYPE_AD'
+          ],
+          filterType: 'FILTER_TYPE_NONE',
+          filterIds: []
+        }
+      }
+    );
+    return downloadOperation;
+  }
+
+  protected waitForDownloadOperationResource(downloadOperationName: string) {
+    const operationResourceUrl = this.getUrl(downloadOperationName);
+    const initialDelay = 2000;
+    const maxRetries = 10;
+    const delayMultiplier = 2;
+
+    let downloadOperation;
+    let delay = initialDelay;
+    let tryCount = 0;
+    while (tryCount <= maxRetries) {
+      downloadOperation = this.fetchEntity(operationResourceUrl);
+      Logger.log(downloadOperation);
+      if (downloadOperation.done) {
+        return downloadOperation.response.resourceName;
+      }
+      Logger.log(`Backing off for ${delay}ms`);
+      Utilities.sleep(delay);
+      tryCount++;
+      delay *= delayMultiplier;
+    }
+    Logger.log(`Try limit exceeded after ${tryCount} tries`);
+    return undefined;
+  }
+
+  downloadMedia(resourceName: string): GoogleAppsScript.Base.Blob {
+    //url doesn't contain version, just /media/
+    const downloadMediaUrl = this.getUrl(
+      `download/${resourceName}?alt=media`
+    ).replace('/v2', '');
+    const downloadMedia = this.fetchBlob(downloadMediaUrl);
+    //TODO move somewhere else afterwards
+    downloadMedia.setContentType('application/zip');
+    return downloadMedia;
+  }
+
+  unzipSdfs(downloadMedia: GoogleAppsScript.Base.Blob): Array<CsvFile> {
+    var unZippedfiles = Utilities.unzip(downloadMedia);
+    const csvValues = Array<CsvFile>();
+    unZippedfiles.forEach((blob) => {
+      const fileName = blob.getName();
+      const values = Utilities.parseCsv(blob.getDataAsString());
+      Logger.log(`Found ${values.length} entities in file ${fileName}`);
+      csvValues.push(new CsvFile(fileName, values));
+    });
+    return csvValues;
+  }
+
+  downloadSdfs(advertiserId: string): Array<CsvFile> {
+    const downloadTask = this.createSdfDownloadOperation(advertiserId);
+    const resourceName = this.waitForDownloadOperationResource(
+      downloadTask.name
+    );
+    Logger.log(`Downloading media ${resourceName} and putting it into sheets`);
+    const media = this.downloadMedia(resourceName);
+    return this.unzipSdfs(media);
   }
 }
