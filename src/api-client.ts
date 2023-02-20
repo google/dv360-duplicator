@@ -1,3 +1,16 @@
+/**
+    Copyright 2023 Google LLC
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+        https://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+
 export abstract class ApiClient {
   /**
    *
@@ -71,15 +84,20 @@ export abstract class ApiClient {
 
     console.log(`Before fetch URL: ${url}`);
     console.log(`Before fetch payload: ${requestOptions.payload}`);
-    const res = UrlFetchApp.fetch(url, requestOptions);
+    try {
+      const res = UrlFetchApp.fetch(url, requestOptions);
+      if (200 != res.getResponseCode() && 204 != res.getResponseCode()) {
+        console.log('HTTP code: ' + res.getResponseCode());
+        console.log('API error: ' + res.getContentText());
+        console.log('URL: ' + url);
+        throw Error(res.getContentText());
+      }
 
-    if (200 != res.getResponseCode() && 204 != res.getResponseCode()) {
-      Logger.log('HTTP code: ' + res.getResponseCode());
-      Logger.log('API error: ' + res.getContentText());
-      Logger.log('URL: ' + url);
-      throw new Error(res.getContentText());
+      return res.getContentText() ? JSON.parse(res.getContentText()) : {};
+    } catch (e: any) {
+      console.log(e);
+      console.log(e.stack);
+      throw e;
     }
-
-    return res.getContentText() ? JSON.parse(res.getContentText()) : {};
   }
 }

@@ -11,23 +11,28 @@
     limitations under the License.
 */
 
-import { SheetCache } from './sheet-cache';
-import { SheetUtils } from './sheets';
+export type LogicalOperation = 'OR'|'AND';
 
-export const CacheUtils = {
-    /**
-     * Create all needed cache instances
-     * 
-     * @param entities Key-Value pairs for all cache entities to be created
-     */
-    initCache(entities: { [key: string]: string }) {
-        const result: {[key: string]: SheetCache} = {};
-        Object.keys(entities).forEach((key: string) => {
-            result[key] = new SheetCache(
-                SheetUtils.getOrCreateSheet(entities[key])
-            );
-        });
-    
-        return result;
+export const DV360Utils = {
+    generateFilterString(
+        field: string,
+        values: string[],
+        logicalOperation: LogicalOperation = 'OR'
+    ) {
+        if (! field) {
+            throw Error('Filtering field canot be empty');
+        }
+
+        if (!values.length) {
+            return '';
+        }
+
+        return '(' 
+            + values
+                .map((filterValue) => `${field}="${filterValue}"`)
+                .join(` ${logicalOperation} `)
+            + ')';
+
     }
-}
+};
+

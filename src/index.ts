@@ -1,10 +1,22 @@
+/**
+    Copyright 2023 Google LLC
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+        https://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+
 import { Config } from './config';
 import { DV360 } from './dv360';
-import { SheetUtils } from './sheets';
-import { SheetCache } from './sheet-cache';
 import { CacheUtils } from './cache-utils';
-import { onEditEvent, OnEditHandler } from './trigger';
+import { onEditEvent } from './trigger';
 import { TriggerUtils } from './trigger-utils';
+import { DV360Utils } from './dv360-utils';
 
 /**
  * Global cache container
@@ -48,8 +60,19 @@ function loadAdvertisers(partnerId: string) {
 function loadCampaigns(advertiserId: string) {
   let campaigns = SHEET_CACHE.Campaigns.lookup(advertiserId, 1);
   if (!campaigns.length) {
-    const dv360campaigns = dv360.listCampaigns(advertiserId, { limit: 10 });
-    if (campaigns && campaigns.length && campaigns[0]) {
+    const dv360campaigns = dv360.listCampaigns(
+      advertiserId,
+      {
+        limit: 10,
+        // List all campaigns
+        filter: DV360Utils.generateFilterString(
+          'entityStatus',
+          Config.DV360DefaultFilters.CampaignStatus
+        ),
+      }
+    );
+
+    if (dv360campaigns && dv360campaigns.length && dv360campaigns[0]) {
       campaigns = dv360campaigns.map((campaign) => {
         console.log('campaign', campaign); 
         return [
@@ -81,11 +104,11 @@ function teardown() {
 }
 
 const partnerChangedHandler = TriggerUtils.generateOnEditHandler(
-  'Campaigns', 1, 1, SHEET_CACHE.Partners, loadAdvertisers
+  Config.WorkingSheet.Campaigns, 1, 1, SHEET_CACHE.Partners, loadAdvertisers
 );
 
 const advertiserChangedHandler = TriggerUtils.generateOnEditHandler(
-  'Campaigns', 2, 2, SHEET_CACHE.Advertisers, loadCampaigns
+  Config.WorkingSheet.Campaigns, 2, 2, SHEET_CACHE.Advertisers, loadCampaigns
 );
 
 onEditEvent.addHandler(partnerChangedHandler);
