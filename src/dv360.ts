@@ -37,6 +37,7 @@ export interface Dv360Campaign {
   partnerId: string;
   advertiserId: string;
   campaignId: string;
+  entityStatus: string;
 }
 
 interface Dv360AdvertisersPage extends ResourcePage {
@@ -200,7 +201,7 @@ export class DV360 extends ApiClient {
         method: 'post'
       },
       {
-        version: 'SDF_VERSION_5_5',
+        version: 'SDF_VERSION_5_5', // TODO: Take version from the advertiser
         advertiserId: advertiserId,
         parentEntityFilter: {
           fileType: [
@@ -220,7 +221,7 @@ export class DV360 extends ApiClient {
 
   protected waitForDownloadOperationResource(downloadOperationName: string) {
     const operationResourceUrl = this.getUrl(downloadOperationName);
-    const initialDelay = 2000;
+    const initialDelay = 10000;
     const maxRetries = 10;
     const delayMultiplier = 2;
 
@@ -270,8 +271,14 @@ export class DV360 extends ApiClient {
     const resourceName = this.waitForDownloadOperationResource(
       downloadTask.name
     );
-    Logger.log(`Downloading media ${resourceName} and putting it into sheets`);
+    Logger.log(`Downloading media ${resourceName}`);
     const media = this.downloadMedia(resourceName);
     return this.unzipSdfs(media);
+  }
+
+  downloadTest() {
+    console.log(
+      this.unzipSdfs(this.downloadMedia('sdfdownloadtasks/media/76591525'))[0].values
+    );
   }
 }

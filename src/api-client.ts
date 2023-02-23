@@ -115,7 +115,6 @@ export abstract class ApiClient {
         throw Error(res.getContentText());
       }
 
-      //return res.getContentText() ? JSON.parse(res.getContentText()) : {};
       return res;
     } catch (e: any) {
       console.log(e);

@@ -11,8 +11,10 @@
     limitations under the License.
 */
 
-export type SdfEntityName = 
-    'Campaigns'
+import { dv360 } from "./dv360-utils";
+import { SheetUtils } from "./sheet-utils";
+
+export type SdfEntityName = 'Campaigns'
     | 'InsertionOrders' 
     | 'LineItems' 
     | 'AdGroups'
@@ -20,14 +22,21 @@ export type SdfEntityName =
 
 export const SdfUtils = {
     /**
-     * Get the SDF from the sheet or if the sheet does not exists then download
-     *  it from DV360 API.
+     * Returns the SDF as an array of Objects. If the sheet does not exist
+     * then first download all SDF files from DV360 API and save to the sheet.
      * 
      * @param entity SDF for which DV360 entity should be returned.
      * @param advertiserId Advertiser ID, used as prefix for the "cache" sheet 
      *  name
      */
-    downloadSDFOrGetFromSheet(entity: SdfEntityName, advertiserId: string) {
+    sdfGetFromSheetOrDownload(entity: SdfEntityName, advertiserId: string) {
+        const prefix = advertiserId + '-';
+        const sheetName = prefix + 'SDF-' + entity + '.csv';
+        if (! SpreadsheetApp.getActive().getSheetByName(sheetName)) {
+            const csvFiles = dv360.downloadSdfs(advertiserId);
+            SheetUtils.putCsvFilesIntoSheets(csvFiles, prefix, true);
+        }
 
+        return SheetUtils.readSheetAsJSON(sheetName);
     }
 }

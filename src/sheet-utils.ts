@@ -55,7 +55,7 @@ export const SheetUtils = {
   readSheetAsJSON(name: string) {
     const returnValues: StringKeyObject[] = [];
     const sheetData = SheetUtils.readSheet(name);
-    if (sheetData && sheetData.length < 2) { 
+    if (sheetData && sheetData.length > 1) { 
       const headers = sheetData[0];
       sheetData
         .slice(1) // Skip header row
@@ -95,7 +95,7 @@ export const SheetUtils = {
    *  (e.g. useful if we want to store SDFs for several advertisers)
    * @param hideSheets Should we hide those created CVS containing sheets
    */
-  putCsvValuesIntoSheets(
+  putCsvFilesIntoSheets(
     csvValues: Array<CsvFile>, 
     sheetPrefix = '', 
     hideSheets = false

@@ -10,19 +10,19 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-import { DV360 } from './dv360';
+import { dv360 } from './dv360-utils';
 import { SheetUtils } from './sheet-utils';
 import { Config } from './config';
 import { CacheUtils } from './cache-utils';
 import { onEditEvent } from './trigger';
 import { TriggerUtils } from './trigger-utils';
 import { DV360Utils } from './dv360-utils';
+import { SdfUtils } from './sdf-utils';
 
 /**
  * Global cache container
  */
 const SHEET_CACHE = CacheUtils.initCache(Config.CacheSheetName);
-const dv360 = new DV360(ScriptApp.getOAuthToken());
 
 function loadPartners() {
   if (SHEET_CACHE.Partners.isEmpty()) {
@@ -79,7 +79,8 @@ function loadCampaigns(advertiserId: string) {
           `${campaign.displayName} (${campaign.campaignId})`,
           campaign.advertiserId,
           campaign.campaignId,
-          campaign.displayName
+          campaign.displayName,
+          campaign.entityStatus,
         ]
       });
     }
@@ -116,23 +117,47 @@ onEditEvent.addHandler(advertiserChangedHandler);
 
 function generateNewSDFForSelectedCampaigns() {
   const sheetData = SheetUtils.readSheetAsJSON(Config.WorkingSheet.Campaigns);
-  if (! sheetData || !sheetData.length) {
+  if (!sheetData || sheetData.length < 2) {
     // Nothing to generate
     return;
   }
 
   sheetData.forEach((row) => {
-    // TODO: More Validation!!!
+    // TODO: More Validation! Especially check that all mandatory fields are set
 
     if (! ('Advertiser' in row)) {
       throw Error('Advertiser is not defined');
     }
 
-    const advertiserInfo = SHEET_CACHE.Advertiser.find(row['Advertiser'], 1);
-    if (! advertiserInfo || 4 != advertiserInfo.length || ! advertiserInfo[2]) {
-      throw Error(`Advertiser '${row['Advertiser']}' not defined or not found.`);
+    const advertiserInfo = SHEET_CACHE.Advertisers.find(row['Advertiser'], 0);
+    if (! advertiserInfo || advertiserInfo.length < 4 || ! advertiserInfo[2]) {
+      throw Error(`Advertiser '${row['Advertiser']}' not found.`);
     }
+    const advertiserId = advertiserInfo[2] as string;
+    const campaignsSDF = SdfUtils.sdfGetFromSheetOrDownload(
+      'Campaigns', advertiserId
+    );
 
-    const advertiserId = advertiserInfo[2];
+    const campaignInfo = SHEET_CACHE.Campaigns.find(row['Campaign'], 0);
+    if (! campaignInfo || campaignInfo.length < 4 || ! campaignInfo[2]) {
+      throw Error(`Campaign '${row['Campaign']}' not found.`);
+    }
+    const campaignId = campaignInfo[2] as string;
+    
+    const selectedCampaign = campaignsSDF.filter(
+      campaign => campaignId == campaign['Campaign Id']
+    );
+    if (!selectedCampaign || !selectedCampaign.length) {
+      throw Error(`Campaign with id '${campaignId}' not found in SDF.`);
+    }
+    
+    console.log(
+      `Generating SDFs for advertiser id:${advertiserId} and campaign id:${campaignId}`,
+      `- old Campaign: ${row['Campaign']}, new campaign name ${row['New: Name']}`
+    );
   });
+}
+
+function testSDF() {
+  dv360.downloadTest();
 }

@@ -86,14 +86,7 @@ export class SheetCache {
             return [];
         }
 
-        const data = this.cacheSheet
-            .getRange(
-                1, 1,
-                this.cacheSheet.getLastRow(),
-                this.cacheSheet.getLastColumn()
-            )
-            .getValues();
-
+        const data = this.getAll();
         if (!data || !data.length) {
             console.log(`Empty cache in sheet "${this.cacheSheet.getName()}"`);
             return [];
@@ -125,5 +118,18 @@ export class SheetCache {
      */
     clear() {
         this.cacheSheet.clear();
+    }
+
+    /**
+     * Returns all cached data as 2D array
+     */
+    getAll() {
+        return this.cacheSheet
+            .getRange(
+                1, 1,
+                this.cacheSheet.getLastRow(),
+                this.cacheSheet.getLastColumn()
+            )
+            .getValues()
     }
 }
