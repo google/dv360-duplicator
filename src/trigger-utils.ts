@@ -24,7 +24,7 @@ export const TriggerUtils = {
      * @param sheetName The sheet name where we wait for the edit events
      * @param columnNumber Index of the column where we wait for the event
      *  (indexes start from 1)
-     * @param parentIdIndex Column index of the parnet entity ID in the "cache"
+     * @param parentIdIndex Column index of the parent entity ID in the "cache"
      * @param cache Cache object (see SheetCache)
      * @param loadFunction Function that returns an array of values for the 
      *  sub-entity drop down
