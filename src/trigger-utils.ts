@@ -28,6 +28,8 @@ export const TriggerUtils = {
      * @param cache Cache object (see SheetCache)
      * @param loadFunction Function that returns an array of values for the 
      *  sub-entity drop down
+     * @param runFunction If specified this function will be triggered instead 
+     *  of default "run" function
      * @returns Correct handler to be added in the installable trigger 
      *  (e.g. `onEditEvent.addHandler(handler)`)
      */
@@ -36,7 +38,8 @@ export const TriggerUtils = {
         columnNumber: number,
         parentIdIndex: number,
         cache: SheetCache,
-        loadFunction: ((x: string) => CacheValue[] | CacheValue[][])
+        loadFunction?: ((x: string) => CacheValue[] | CacheValue[][]),
+        runFunction?: (r: GoogleAppsScript.Spreadsheet.Range, c: SheetCache) => any
     ): OnEditHandler {
         return {
             shouldRun({ range }) {
@@ -49,6 +52,18 @@ export const TriggerUtils = {
             run({ range }) {
                 console.log(`Running changed handler`);
                 console.log(`Source range: [${range.getColumn()}, ${range.getRow()}]`);
+
+                if (runFunction) {
+                  console.log(`Trigerring a custom runFunction ${runFunction}`);
+                  return runFunction(range, cache)
+                }
+
+                if (! loadFunction) {
+                  throw Error(
+                    'Either "loadFunction" or "runFunction" should be specified'
+                  );
+                }
+
                 const campaignSheet = range.getSheet();
                 const targetRange = campaignSheet
                   .getRange(range.getRow(), range.getColumn() + 1)

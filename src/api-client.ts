@@ -64,7 +64,7 @@ export abstract class ApiClient {
   ) {
     const res = this.fetchResponse(url, options, payload);
     if (! res) {
-
+      throw Error('Cannot get result');
     }
 
     return res.getContentText() ? JSON.parse(res.getContentText()) : {};

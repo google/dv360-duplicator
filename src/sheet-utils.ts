@@ -12,6 +12,9 @@
 */
 
 import { CsvFile } from './csv-file';
+import { dv360 } from './dv360-utils';
+import { CacheValue, SheetCache } from './sheet-cache';
+import { Config } from './config';
 
 export type StringKeyObject = {[key: string]: string};
 
@@ -111,5 +114,85 @@ export const SheetUtils = {
         targetSheet.hideSheet();
       }
     });
+  },
+
+  /**
+   * Inform the user that archived campaign should be unarchived before it can 
+   *  be copied
+   * 
+   * @param campaign Campaign selected from the drop down 
+   * @param cache Where to search for info about that campaign
+   */
+  processArchivedCampaign(range: GoogleAppsScript.Spreadsheet.Range, cache: SheetCache) {
+    const campaign = "" + range.getValues()[0];
+    const extendedCampaignInfo = cache.find(campaign, 0);
+    if (! extendedCampaignInfo.length) {
+      throw Error('Campaign not found');
+    }
+
+    const advertiserId = extendedCampaignInfo[1];
+    const campaignId = extendedCampaignInfo[2];
+    const campaignStatus = extendedCampaignInfo[4];
+    if (! advertiserId || !campaignId || !campaignStatus) {
+      throw Error('Campaign info is not full');
+    }
+
+    switch (campaignStatus) {
+      case Config.CampaignStatus.Archived:
+        return SheetUtils.showUnarchiveDialog(
+          advertiserId, campaignId, range, cache,
+        );
+
+      case Config.CampaignStatus.Active:
+      case Config.CampaignStatus.Paused:
+        return;
+      
+      default:
+        throw Error('Unknown campaign status');
+    }
+  },
+
+  /**
+   * Shows the "Unarchive" dialog and if user selected "Yes", unarchives the 
+   *  campaign
+   * 
+   * @param advertiserId Campaign's Advertiser ID
+   * @param campaignId Campaign ID to be unarchived
+   * @param range The cell where the campaign was selected
+   * @param cache Campaigns cache, to update the status after the campaign was 
+   *  unarchived
+   */
+  showUnarchiveDialog(
+    advertiserId: CacheValue,
+    campaignId: CacheValue,
+    range: GoogleAppsScript.Spreadsheet.Range,
+    cache: SheetCache,
+  ) {
+    const ui = SpreadsheetApp.getUi();
+    const response = ui.alert(
+      'You selected an archived campaign', 
+      'You can anarchive it (or duplicate) yourself in UI or we can do this for you. Do you want we unarchive it for you?',
+      ui.ButtonSet.YES_NO
+    );
+
+    // TODO: "Loading" indicator
+    if (ui.Button.YES == response) {
+      try {
+        dv360.unarchiveCampaign(
+          advertiserId as string, 
+          campaignId as string
+        );
+        cache.findAndUpdateOneElement(
+          campaignId, 2, 
+          Config.CampaignStatus.Active, 4,
+        );
+
+        ui.alert('Done! Now you can copy this campaign');
+      } catch (e: any) {
+        console.log(e);
+        console.log(e.stack);
+        ui.alert('Oops, something went wrong, please try again later');
+      }
+    }
   },
 };

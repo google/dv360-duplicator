@@ -70,6 +70,10 @@ export interface ListCampaignOptions extends PagingOptions {
   limit?: number;
 }
 
+export type DV360CampaignStatus = 'ENTITY_STATUS_ACTIVE' 
+  | 'ENTITY_STATUS_ARCHIVED' 
+  | 'ENTITY_STATUS_PAUSED';
+
 /**
  * DV360 API Wrapper class. Implements DV360 API calls.
  */
@@ -280,5 +284,33 @@ export class DV360 extends ApiClient {
     console.log(
       this.unzipSdfs(this.downloadMedia('sdfdownloadtasks/media/76591525'))[0].values
     );
+  }
+
+  /**
+   * Changes the campaign status
+   * 
+   * @param advertiserId DV360 Advertiser ID 
+   * @param campaignId DV360 Campaign ID
+   * @param newStatus End campaign status
+   */
+  changeCampaignStatus(advertiserId: string, campaignId: string, newStatus: DV360CampaignStatus) {
+    return this.fetchEntity(
+      this.getUrl(
+        `advertisers/${advertiserId}/campaigns/${campaignId}`,
+        {updateMask: 'entityStatus'}
+      ),
+      { method: 'patch' },
+      { entityStatus: newStatus }
+    );
+  }
+
+  /**
+   * Will change the campaign status to Active
+   * 
+   * @param advertiserId DV360 Advertiser ID 
+   * @param campaignId DV360 Campaign ID
+   */
+  unarchiveCampaign(advertiserId: string, campaignId: string) {
+    return this.changeCampaignStatus(advertiserId, campaignId, 'ENTITY_STATUS_ACTIVE');
   }
 }

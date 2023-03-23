@@ -112,8 +112,18 @@ const advertiserChangedHandler = TriggerUtils.generateOnEditHandler(
   Config.WorkingSheet.Campaigns, 2, 2, SHEET_CACHE.Advertisers, loadCampaigns
 );
 
+const checkArchivedCampaignHandler = TriggerUtils.generateOnEditHandler(
+  Config.WorkingSheet.Campaigns, 
+  3, 
+  2, // Not important since we use a custom run function
+  SHEET_CACHE.Campaigns, 
+  undefined,
+  SheetUtils.processArchivedCampaign
+);
+
 onEditEvent.addHandler(partnerChangedHandler);
 onEditEvent.addHandler(advertiserChangedHandler);
+onEditEvent.addHandler(checkArchivedCampaignHandler);
 
 function generateNewSDFForSelectedCampaigns() {
   const sheetData = SheetUtils.readSheetAsJSON(Config.WorkingSheet.Campaigns);

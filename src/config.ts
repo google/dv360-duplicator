@@ -29,6 +29,11 @@ export const Config = {
             'ENTITY_STATUS_ARCHIVED',
         ],
     },
+    CampaignStatus: {
+        Active: 'ENTITY_STATUS_ACTIVE',
+        Archived: 'ENTITY_STATUS_ARCHIVED',
+        Paused: 'ENTITY_STATUS_PAUSED',
+    },
     // A list of the column headers in the sheet that we allow to overwrite.
     // On different levels this list will be different and according to format:
     //  https://developers.google.com/display-video/api/structured-data-file/format

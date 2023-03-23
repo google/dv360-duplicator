@@ -35,7 +35,7 @@ export const DV360Utils = {
                 .join(` ${logicalOperation} `)
             + ')';
 
-    }
+    },
 };
 
 export const dv360 = new DV360(ScriptApp.getOAuthToken());
