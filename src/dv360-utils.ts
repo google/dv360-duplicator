@@ -38,4 +38,6 @@ export const DV360Utils = {
     },
 };
 
-export const dv360 = new DV360(ScriptApp.getOAuthToken());
+const authToken = ScriptApp.getOAuthToken();
+// TODO: Improve the export logic in case the token is empty
+export const dv360 = new DV360(authToken ?? 'default');

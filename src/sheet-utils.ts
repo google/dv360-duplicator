@@ -15,8 +15,7 @@ import { CsvFile } from './csv-file';
 import { dv360 } from './dv360-utils';
 import { CacheValue, SheetCache } from './sheet-cache';
 import { Config } from './config';
-
-export type StringKeyObject = {[key: string]: string};
+import { StringKeyObject } from './shared';
 
 export const SheetUtils = {
   /**

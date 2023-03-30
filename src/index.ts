@@ -10,14 +10,14 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 */
-import { dv360 } from './dv360-utils';
 import { SheetUtils } from './sheet-utils';
 import { Config } from './config';
 import { CacheUtils } from './cache-utils';
 import { onEditEvent } from './trigger';
 import { TriggerUtils } from './trigger-utils';
-import { DV360Utils } from './dv360-utils';
-import { SdfUtils } from './sdf-utils';
+import { DV360Utils, dv360 } from './dv360-utils';
+import { Setup } from './setup';
+import { NotFoundInSDF, SdfUtils } from './sdf-utils';
 
 /**
  * Global cache container
@@ -92,18 +92,6 @@ function loadCampaigns(advertiserId: string) {
   return campaigns;
 }
 
-function run() {
-  loadPartners();
-}
-
-function setup() {
-  onEditEvent.install();
-}
-
-function teardown() {
-  onEditEvent.uninstall();
-}
-
 const partnerChangedHandler = TriggerUtils.generateOnEditHandler(
   Config.WorkingSheet.Campaigns, 1, 1, SHEET_CACHE.Partners, loadAdvertisers
 );
@@ -125,49 +113,62 @@ onEditEvent.addHandler(partnerChangedHandler);
 onEditEvent.addHandler(advertiserChangedHandler);
 onEditEvent.addHandler(checkArchivedCampaignHandler);
 
-function generateNewSDFForSelectedCampaigns() {
-  const sheetData = SheetUtils.readSheetAsJSON(Config.WorkingSheet.Campaigns);
-  if (!sheetData || sheetData.length < 2) {
-    // Nothing to generate
-    return;
-  }
-
-  sheetData.forEach((row) => {
-    // TODO: More Validation! Especially check that all mandatory fields are set
-
-    if (! ('Advertiser' in row)) {
-      throw Error('Advertiser is not defined');
-    }
-
-    const advertiserInfo = SHEET_CACHE.Advertisers.find(row['Advertiser'], 0);
-    if (! advertiserInfo || advertiserInfo.length < 4 || ! advertiserInfo[2]) {
-      throw Error(`Advertiser '${row['Advertiser']}' not found.`);
-    }
-    const advertiserId = advertiserInfo[2] as string;
-    const campaignsSDF = SdfUtils.sdfGetFromSheetOrDownload(
-      'Campaigns', advertiserId
-    );
-
-    const campaignInfo = SHEET_CACHE.Campaigns.find(row['Campaign'], 0);
-    if (! campaignInfo || campaignInfo.length < 4 || ! campaignInfo[2]) {
-      throw Error(`Campaign '${row['Campaign']}' not found.`);
-    }
-    const campaignId = campaignInfo[2] as string;
-    
-    const selectedCampaign = campaignsSDF.filter(
-      campaign => campaignId == campaign['Campaign Id']
-    );
-    if (!selectedCampaign || !selectedCampaign.length) {
-      throw Error(`Campaign with id '${campaignId}' not found in SDF.`);
-    }
-    
-    console.log(
-      `Generating SDFs for advertiser id:${advertiserId} and campaign id:${campaignId}`,
-      `- old Campaign: ${row['Campaign']}, new campaign name ${row['New: Name']}`
-    );
-  });
+function run() {
+  loadPartners();
 }
 
-function testSDF() {
-  dv360.downloadTest();
+function setup() {
+  onEditEvent.install();
+}
+
+function teardown() {
+  onEditEvent.uninstall();
+}
+
+function onOpen(e: Event) {
+  Setup.createMenu();
+}
+
+function generateSDFForActiveSheet(reloadCache?: boolean): void {
+  const activeSheetName = SpreadsheetApp.getActiveSheet().getName();
+  console.log(`generateSDFForActiveSheet for sheet '${activeSheetName}'`);
+  switch (activeSheetName) {
+    case Config.WorkingSheet.Campaigns:
+      try {
+        SdfUtils.generateNewSDFForSelectedCampaigns(SHEET_CACHE, reloadCache);
+      } catch (e: any) {
+        if (e instanceof NotFoundInSDF && !reloadCache) {
+          const ui = SpreadsheetApp.getUi();
+          const response = ui.alert(
+            'Action needed', e.message, ui.ButtonSet.YES_NO
+          );
+
+          // TODO: "Loading" indicator
+          if (ui.Button.YES == response) {
+            return generateSDFForActiveSheet(true);
+          }
+        } else if (e instanceof NotFoundInSDF && reloadCache) {
+          SpreadsheetApp.getUi().alert(
+            'After reloading the cache the campaign is still not found. Please try selecting a different campaign.'
+          );
+          return;
+        } else {
+          SpreadsheetApp.getUi().alert(e.message);
+          throw e;
+        }
+      }
+      break;
+
+    default:
+      const message = `Unsupported sheet ('${activeSheetName}'), cannot generate SDF. Please select different sheet.`;
+      SpreadsheetApp.getUi().alert(message);
+      throw Error(message);
+  }
+}
+
+function reloadCacheForActiveSheet() {
+  const activeSheetName = SpreadsheetApp.getActiveSheet().getName();
+  console.log(`reloadSDFForActiveSheet reloading cached SDFs for sheet '${activeSheetName}'`);
+
+
 }

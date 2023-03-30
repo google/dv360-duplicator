@@ -9,7 +9,7 @@
     "build:bundle": "npx rollup -c rollup.config.mjs",
     "build": "npm run clean && npm run build:compile && npm run build:bundle",
     "test": "npx jest src/*",
-    "deploy": "npm run build && cp appsscript.json dist && clasp push"
+    "deploy": "npm run build && cp appsscript.json dist && clasp push -f"
   },
   "devDependencies": {
     "@google/clasp": "^2.4.2",

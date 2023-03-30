@@ -225,23 +225,21 @@ export class DV360 extends ApiClient {
 
   protected waitForDownloadOperationResource(downloadOperationName: string) {
     const operationResourceUrl = this.getUrl(downloadOperationName);
-    const initialDelay = 10000;
+    const initialDelay = 20000;
     const maxRetries = 10;
-    const delayMultiplier = 2;
 
     let downloadOperation;
-    let delay = initialDelay;
-    let tryCount = 0;
+    let tryCount = 1;
     while (tryCount <= maxRetries) {
       downloadOperation = this.fetchEntity(operationResourceUrl);
       Logger.log(downloadOperation);
       if (downloadOperation.done) {
         return downloadOperation.response.resourceName;
       }
+
+      const delay = initialDelay * (tryCount++);
       Logger.log(`Backing off for ${delay}ms`);
       Utilities.sleep(delay);
-      tryCount++;
-      delay *= delayMultiplier;
     }
     Logger.log(`Try limit exceeded after ${tryCount} tries`);
     return undefined;
@@ -280,12 +278,6 @@ export class DV360 extends ApiClient {
     return this.unzipSdfs(media);
   }
 
-  downloadTest() {
-    console.log(
-      this.unzipSdfs(this.downloadMedia('sdfdownloadtasks/media/76591525'))[0].values
-    );
-  }
-
   /**
    * Changes the campaign status
    * 
@@ -305,7 +297,7 @@ export class DV360 extends ApiClient {
   }
 
   /**
-   * Will change the campaign status to Active
+   * Changes the campaign status to Active
    * 
    * @param advertiserId DV360 Advertiser ID 
    * @param campaignId DV360 Campaign ID
