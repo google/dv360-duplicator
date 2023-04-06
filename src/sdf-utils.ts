@@ -128,9 +128,15 @@ export const SdfUtils = {
             {'Campaigns': generatedSdfEntries}
         );
 
-        const content = `
-            Please check 
-            <a href="${newSheet}" target="_blank">the SDF by clicking here</a>!
+        const content = `Done! Here is what you can do next:<br /><br />
+            Step 1: Please check 
+            <a href="${newSheet}" target="_blank">the SDF (by clicking here)</a> 
+            and adjust it if needed.<br /><br />
+
+            Step 2: <a href="${newSheet}" target="_blank">download generated 
+            files as one file.</a>!<br /><br />
+
+            Step 3: Upload to DV360.
         `;
         const htmlOutput = HtmlService.createHtmlOutput(content);
         SpreadsheetApp.getUi().showModalDialog(

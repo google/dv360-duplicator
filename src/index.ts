@@ -135,6 +135,7 @@ function generateSDFForActiveSheet(reloadCache?: boolean): void {
   switch (activeSheetName) {
     case Config.WorkingSheet.Campaigns:
       try {
+        SheetUtils.loading.show('Generating SDF. It may take several minutes...');
         SdfUtils.generateNewSDFForSelectedCampaigns(SHEET_CACHE, reloadCache);
       } catch (e: any) {
         if (e instanceof NotFoundInSDF && !reloadCache) {
@@ -143,7 +144,6 @@ function generateSDFForActiveSheet(reloadCache?: boolean): void {
             'Action needed', e.message, ui.ButtonSet.YES_NO
           );
 
-          // TODO: "Loading" indicator
           if (ui.Button.YES == response) {
             return generateSDFForActiveSheet(true);
           }
@@ -169,6 +169,4 @@ function generateSDFForActiveSheet(reloadCache?: boolean): void {
 function reloadCacheForActiveSheet() {
   const activeSheetName = SpreadsheetApp.getActiveSheet().getName();
   console.log(`reloadSDFForActiveSheet reloading cached SDFs for sheet '${activeSheetName}'`);
-
-
 }

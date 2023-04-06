@@ -16,6 +16,7 @@ import { dv360 } from './dv360-utils';
 import { CacheValue, SheetCache } from './sheet-cache';
 import { Config } from './config';
 import { StringKeyObject } from './shared';
+import { spinnerHTML } from './spinner';
 
 export const SheetUtils = {
   /**
@@ -177,6 +178,7 @@ export const SheetUtils = {
     // TODO: "Loading" indicator
     if (ui.Button.YES == response) {
       try {
+        SheetUtils.loading.show('Unarchiving ...');
         dv360.unarchiveCampaign(
           advertiserId as string, 
           campaignId as string
@@ -193,5 +195,40 @@ export const SheetUtils = {
         ui.alert('Oops, something went wrong, please try again later');
       }
     }
+  },
+
+  loading: {
+    /**
+     * Show the progress/status (e.g. 'Loading...') message to the user
+     * 
+     * @param message Text inside the message box
+     * @param title Title of the message box
+     */
+    show(
+      message = 'Loading...',
+      title = 'Please wait',
+    ) {
+      SpreadsheetApp.getUi()
+        .showModelessDialog(
+          HtmlService.createHtmlOutput(message + '<br />' + spinnerHTML),
+          title
+        );
+    },
+
+    /**
+     * Hide previosly created progress message
+     * 
+     * @param title Title of the message box. Will be shown for very short period 
+     *  of time
+     */
+    hide(title = 'Done') {
+      const hl = '<!DOCTYPE html><html><head><base target="_top"></head><script>'
+        + 'window.onload=()=>{google.script.host.close();}'
+        + '</script><body></body></html>';
+      SpreadsheetApp.getUi().showModelessDialog(
+        HtmlService.createHtmlOutput(hl), 
+        title
+      )
+    },
   },
 };
