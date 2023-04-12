@@ -44,28 +44,22 @@ export const Config = {
     SDFGeneration: {
         // In the stpreadsheet changes will have same column name as in SDF
         // but with this prefix
-        ChangedEntryPrefix: 'New: ',
+        EntityNameDelimiter: ':',
+        NewIdPrefix: 'ext',
 
         // Some fields should be always empty for the items we create
         ClearEntriesForNewSDF: [
             'Timestamp',
         ],
 
-        NewSpreadsheetTitle: `[${appName}] Generated SDF (${Date()})`,
+        SetNewExtId: {
+            Campaigns: "Campaign Id",
+            InsertionOrders: "Io Id",
+            LineItems: "Line Item Id",
+            AdGroups: "Ad Group Id",
+            AdGroupAds: "Ad Id",
+        },
 
-        // A list of the column headers in the sheet that we allow to overwrite.
-        // On different levels this list will be different and according to format:
-        //  https://developers.google.com/display-video/api/structured-data-file/format
-        SDFAllowedFields: {
-            'v5.5': { // API version
-                Campaigns: [
-                    'Name',
-                    'Status',
-                    'Campaign Budget',
-                    'Campaign Start Date',
-                    'Campaign End Date',
-                ],
-            }
-        }
+        NewSpreadsheetTitle: `[${appName}] Generated SDF (${Date()})`,
     }
 };

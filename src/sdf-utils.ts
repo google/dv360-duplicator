@@ -15,7 +15,7 @@ import { dv360 } from "./dv360-utils";
 import { SheetUtils } from "./sheet-utils";
 import { Config } from "./config";
 import { SheetCache } from "./sheet-cache";
-import { StringKeyObject } from './shared';
+import { StringKeyObject, StringKeyArrayOfObjects, StringKeyObjectOfObjects } from './shared';
 
 export type SdfEntityName = 'Campaigns'
     | 'InsertionOrders' 
@@ -24,6 +24,37 @@ export type SdfEntityName = 'Campaigns'
     | 'AdGroupAds';
 
 export class NotFoundInSDF extends Error {}
+export class NotFoundInCache extends Error {}
+
+class ExtNameGenerator {
+    static count = 1;
+    static cache:StringKeyObjectOfObjects = {};
+
+    static generateAndCache(entityName: SdfEntityName, id: string) {
+        // First cache it
+        if (!ExtNameGenerator.cache[entityName]) {
+            ExtNameGenerator.cache[entityName] = {};
+        }
+        const extId = Config.SDFGeneration.NewIdPrefix + ExtNameGenerator.count++;
+        ExtNameGenerator.cache[entityName][extId] = id;
+
+        return extId;
+    }
+
+    static getCached(entityName: SdfEntityName, id: string) {
+        if (
+            !(entityName in ExtNameGenerator.cache) 
+            || !(id in ExtNameGenerator.cache[entityName])
+        ) {
+            console.log('Current ExtNameGenerator.cache', ExtNameGenerator.cache);
+            throw new NotFoundInCache(
+                `ExtNameGenerator didn't find [${entityName}][${id}] in cache`
+            );
+        }
+
+        return ExtNameGenerator.cache[entityName][id];
+    }
+}
 
 export const SdfUtils = {
     /**
@@ -39,7 +70,8 @@ export const SdfUtils = {
     sdfGetFromSheetOrDownload(
         entity: SdfEntityName,
         advertiserId: string,
-        reloadCache?: boolean
+        reloadCache?: boolean,
+        filters?: StringKeyObject,
     ) {
         const prefix = advertiserId + '-';
         const sheetName = prefix + 'SDF-' + entity + '.csv';
@@ -48,7 +80,12 @@ export const SdfUtils = {
             SheetUtils.putCsvFilesIntoSheets(csvFiles, prefix, true);
         }
 
-        return SheetUtils.readSheetAsJSON(sheetName);
+        const sdfArray = SheetUtils.readSheetAsJSON(sheetName);
+        return filters 
+            ? sdfArray.filter(
+                x => x[ Object.keys(filters)[0] ] === Object.values(filters)[0]
+            )
+            : sdfArray;
     },
 
     /**
@@ -71,7 +108,7 @@ export const SdfUtils = {
       
         // We don't want to download SDFs several times for the same run
         const advertisersForWhichWeAlreadyGotSDF: string[] = [];
-        const generatedSdfEntries: StringKeyObject[] = [];
+        const generatedSdfEntries: StringKeyArrayOfObjects = {};
         sheetData.forEach((row) => {
           // TODO: More Validation! Especially check that all mandatory fields are set
       
@@ -110,13 +147,37 @@ export const SdfUtils = {
           
           console.log(
             `Generating SDFs for advertiser id:${advertiserId} and campaign id:${campaignId}`,
-            `- old Campaign: ${row['Campaign']}, new campaign name ${row['New: Name']}`
+            `- Template Campaign: ${row['Campaign']}`
           );
-          
-          const generatedSDFRow = SdfUtils.generateSDFRow(
+
+          if (! generatedSdfEntries.Campaigns) {
+            generatedSdfEntries.Campaigns = [];
+          }
+
+          const generatedCampaign = SdfUtils.generateSDFRow(
+            selectedCampaign, row, "Campaigns"
+          );
+          generatedSdfEntries.Campaigns.push(generatedCampaign);
+
+          if (! generatedSdfEntries.InsertionOrders) {
+            generatedSdfEntries.InsertionOrders = [];
+          }
+          row['InsertionOrders:' + Config.SDFGeneration.SetNewExtId.Campaigns] 
+            = generatedCampaign[Config.SDFGeneration.SetNewExtId.Campaigns];
+        
+          const generatedIOs = SdfUtils.generateSDFForInsertionOrders(
             selectedCampaign, row
           );
-          generatedSdfEntries.push(generatedSDFRow);
+          generatedSdfEntries.InsertionOrders.push(...generatedIOs);
+
+          if (! generatedSdfEntries.LineItems) {
+            generatedSdfEntries.LineItems = [];
+          }
+          const generatedLIs = SdfUtils.generateSDFForLineItems(
+            generatedIOs, row, advertiserId
+          );
+          generatedSdfEntries.LineItems.push(...generatedLIs);
+
         });
 
         console.log(
@@ -124,71 +185,160 @@ export const SdfUtils = {
             generatedSdfEntries
         );
         
-        const newSheet = SdfUtils.saveToSpreadsheet(
-            {'Campaigns': generatedSdfEntries}
-        );
+        const newSheet = SdfUtils.saveToSpreadsheet(generatedSdfEntries);
 
-        const content = `Done! Here is what you can do next:<br /><br />
-            Step 1: Please check 
+        const htmlContent = `Done! Here is what you can do next:<br /><br />
+            <b>Step 1</b>: Please check 
             <a href="${newSheet}" target="_blank">the SDF (by clicking here)</a> 
             and adjust it if needed.<br /><br />
 
-            Step 2: <a href="${newSheet}" target="_blank">download generated 
+            <b>Step 2</b>: <a href="${newSheet}" target="_blank">download generated 
             files as one file.</a>!<br /><br />
 
-            Step 3: Upload to DV360.
+            <b>Step 3</b>: Upload to DV360.
         `;
-        const htmlOutput = HtmlService.createHtmlOutput(content);
+        const htmlOutput = HtmlService.createHtmlOutput(htmlContent);
         SpreadsheetApp.getUi().showModalDialog(
-            htmlOutput,
-            'SDF was generated'
+            htmlOutput, 
+            'SDF was generated 🤗'
         );
+    },
+
+    generateSDFForInsertionOrders(
+        campaign: StringKeyObject,
+        changes: StringKeyObject
+    ) {
+        const entityName = 'InsertionOrders';
+        const result:StringKeyObject[] = [];
+
+        const ioSDFs = SdfUtils.sdfGetFromSheetOrDownload(
+            entityName, 
+            campaign['Advertiser Id'],
+            false,
+            {'Campaign Id': campaign['Campaign Id']}
+        );
+
+        ioSDFs.forEach(io => {
+            result.push(SdfUtils.generateSDFRow(io, changes, entityName));
+        });
+        
+        return result;
+    },
+
+    generateSDFForLineItems(
+        ios: StringKeyObject[],
+        changes: StringKeyObject,
+        advertiserId: string
+    ) {
+        const entityName = 'LineItems';
+        const result:StringKeyObject[] = [];
+
+        ios.forEach(io => {
+            console.log('+ Getting lineitems for IO ID:', io);
+            const liSDFs = SdfUtils.sdfGetFromSheetOrDownload(
+                entityName,
+                advertiserId,
+                false,
+                {'Io Id': ExtNameGenerator.getCached("InsertionOrders", io['Io Id'])}
+            );
+    
+            changes[entityName + ':' + Config.SDFGeneration.SetNewExtId.InsertionOrders]
+                = io[Config.SDFGeneration.SetNewExtId.InsertionOrders];
+            liSDFs.forEach(li => {
+                console.log('+ Generating SDF for LI ID:', li['Line Item Id']);
+                result.push(SdfUtils.generateSDFRow(li, changes, entityName));
+            });
+        });
+        
+        return result;
     },
 
     /**
      * Generates and returns one row (as JS Object) of the copied SDF for the 
-     *  selected entity
+     *  selected entity with the substituted values
      * 
      * @param templateEntity Entity that should be copied
      * @param entityChanges Changes to be made as JS Object
+     * @param entityName DV360 Entity name for which the SDF row is generated 
      */
     generateSDFRow(
         templateEntity: StringKeyObject,
-        entityChanges: StringKeyObject
+        entityChanges: StringKeyObject,
+        entityName: SdfEntityName,
     ): StringKeyObject {
         const result: StringKeyObject = {};
         for (let key in templateEntity) {
-            if (Config.SDFGeneration.ClearEntriesForNewSDF.includes(key)) {
-                result[ key ] = '';
-                continue;
-            }
-
-            const changedFieldName = 
-                Config.SDFGeneration.ChangedEntryPrefix + key;
-            if (changedFieldName in entityChanges) {
-                result[ key ] = entityChanges[changedFieldName];
-            } else {
-                result[ key ] = templateEntity[key];
-            }
+            result[ key ] = SdfUtils.generateSDFCell(
+                key, templateEntity, entityChanges, entityName
+            );
         }
 
         return result;
     },
 
+    generateSDFCell(
+        key: string,
+        templateEntity: StringKeyObject,
+        entityChanges: StringKeyObject,
+        entityName: SdfEntityName,
+    ): string {
+        const entityFieldName = 
+            entityName 
+            + Config.SDFGeneration.EntityNameDelimiter 
+            + key;
+        if (entityName && entityFieldName in entityChanges) {
+            return entityChanges[entityFieldName];
+        }
+
+        if (Config.SDFGeneration.ClearEntriesForNewSDF.includes(key)) { 
+            return '';
+        }
+
+        if (
+            entityName in Config.SDFGeneration.SetNewExtId
+            && key == Config.SDFGeneration.SetNewExtId[entityName]
+        ) {    
+            return ExtNameGenerator.generateAndCache(
+                entityName, templateEntity[key]
+            );
+        }
+        
+        return templateEntity[key];
+    },
+
+    /**
+     * Creates a new spreadsheet and saves each element of "entities" to a separate
+     *  sheet. The names of the sheets are the keys of the "entities".
+     * 
+     * @param entities Data to be saved
+     */
     saveToSpreadsheet(entities: {[key: string]: StringKeyObject[]}) {
+        if (! entities || ! Object.keys(entities).length) {
+            throw Error('Empty entities list, nothing to save...');
+        }
+
         try {
             const newSpreadsheet = SpreadsheetApp.create(Config.SDFGeneration.NewSpreadsheetTitle);
             for (let entityType in entities) {
                 const sheet = newSpreadsheet.insertSheet();
                 const data = SdfUtils.JSONtoArray(entities[entityType])
+                console.log('saveToSpreadsheet data:', data);
 
-                sheet.setName(entityType)
-                    .getRange(1, 1, data.length, data[0].length)
-                    .setValues(data);
+                sheet.setName(entityType);
+                if (data && data[0]) {
+                    sheet.getRange(1, 1, data.length, data[0].length)
+                        .setValues(data);
+                }
+            }
+
+            // Removing the default sheet, since it's not needed
+            const defaultSheet = newSpreadsheet.getSheetByName('Sheet1');
+            if (defaultSheet) {
+                newSpreadsheet.deleteSheet(defaultSheet);
             }
         
             const url = newSpreadsheet.getUrl();
-            console.log(url);
+            console.log('Generated SDF is saved to spreadsheet:', url);
             return url;
         } catch (e: any) {
             console.log(e);
@@ -197,6 +347,12 @@ export const SdfUtils = {
         }
     },
 
+    /**
+     * Converts an array of JSONs to the table array (and returns it) with the
+     *  JSON keys as the headers
+     * 
+     * @param json JSONs to be converted
+     */
     JSONtoArray(json: StringKeyObject[]) {
         const result: string[][] = [];
         if (! json.length) {

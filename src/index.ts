@@ -165,8 +165,3 @@ function generateSDFForActiveSheet(reloadCache?: boolean): void {
       throw Error(message);
   }
 }
-
-function reloadCacheForActiveSheet() {
-  const activeSheetName = SpreadsheetApp.getActiveSheet().getName();
-  console.log(`reloadSDFForActiveSheet reloading cached SDFs for sheet '${activeSheetName}'`);
-}
