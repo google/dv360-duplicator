@@ -17,7 +17,8 @@ import { onEditEvent } from './trigger';
 import { TriggerUtils } from './trigger-utils';
 import { DV360Utils, dv360 } from './dv360-utils';
 import { Setup } from './setup';
-import { NotFoundInSDF, SdfUtils } from './sdf-utils';
+import { NotFoundInSDF, EmptyDataSet, SdfUtils } from './sdf-utils';
+import { SdfDownload } from './sdf-download';
 
 /**
  * Global cache container
@@ -152,6 +153,8 @@ function generateSDFForActiveSheet(reloadCache?: boolean): void {
             'After reloading the cache the campaign is still not found. Please try selecting a different campaign.'
           );
           return;
+        } else if (e instanceof EmptyDataSet) {
+          SpreadsheetApp.getUi().alert(e.message);
         } else {
           SpreadsheetApp.getUi().alert(e.message);
           throw e;
@@ -163,5 +166,21 @@ function generateSDFForActiveSheet(reloadCache?: boolean): void {
       const message = `Unsupported sheet ('${activeSheetName}'), cannot generate SDF. Please select different sheet.`;
       SpreadsheetApp.getUi().alert(message);
       throw Error(message);
+  }
+}
+
+function downloadGeneratedSDFAsZIP(url: string) {
+  try {
+    const sdfDownload = new SdfDownload(url);
+    const zipFile = Utilities.zip(sdfDownload.getAllCSVsFromSpreadsheet());
+
+    const fileInfo = {
+      title: `${Config.SDFGeneration.NewSpreadsheetTitle}.zip`,
+      mimeType: 'application/zip'
+    };
+    const driveFile = Drive.Files?.insert(fileInfo, zipFile);
+    return driveFile?.downloadUrl;
+  } catch (e: any) {
+    SpreadsheetApp.getUi().alert(`ERROR: ${e.message}`);
   }
 }

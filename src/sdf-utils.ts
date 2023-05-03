@@ -18,6 +18,7 @@ import { StringKeyObject, StringKeyArrayOfObjects, StringKeyObjectOfObjects } fr
 import { sdfGenerator } from "./sdf-generator";
 
 export class NotFoundInSDF extends Error {}
+export class EmptyDataSet extends Error {}
 
 export const SdfUtils = {
     /**
@@ -33,15 +34,17 @@ export const SdfUtils = {
         reloadCache?: boolean
     ) {
         const sheetData = SheetUtils.readSheetAsJSON(Config.WorkingSheet.Campaigns);
-        if (!sheetData || sheetData.length < 2) {
+        console.log('generateNewSDFForSelectedCampaigns sheetData', sheetData);
+        if (!sheetData || sheetData.length < 1) {
           // Nothing to generate
-          return;
+          throw new EmptyDataSet('Nothing to generate');
         }
       
         // We don't want to download SDFs several times for the same run
         const advertisersForWhichWeAlreadyGotSDF: string[] = [];
         const campaigns: StringKeyObject[] = [];
         sheetData.forEach((row) => {
+          console.log('generateNewSDFForSelectedCampaigns: Processing row:', row);
           // TODO: More Validation! Especially check that all mandatory fields are set
       
           if (! ('Advertiser' in row)) {
@@ -85,14 +88,22 @@ export const SdfUtils = {
         
         console.log('SDF is generated, saving to the new spreadsheet', sdf);
         const newSheet = SdfUtils.saveToSpreadsheet(sdf);
+        const newSheetEscaped = newSheet.replace('"', '\\"');
 
-        const htmlContent = `Done! Here is what you can do next:<br /><br />
+        const htmlContent = `
+            <script>
+                function initDownload(url) {
+                    alert(url);
+                }
+            </script>
+            Done! Here is what you can do next:<br /><br />
             <b>Step 1</b>: Please check 
             <a href="${newSheet}" target="_blank">the SDF (by clicking here)</a> 
             and adjust it if needed.<br /><br />
 
-            <b>Step 2</b>: <a href="${newSheet}" target="_blank">download generated 
-            files as one file.</a>!<br /><br />
+            <b>Step 2</b>: 
+            <a href="" target="_blank" onclick="google.script.run.withSuccessHandler(initDownload).downloadGeneratedSDFAsZIP('${newSheetEscaped}'); return false;">
+            download generated files as one "zip"</a>!<br /><br />
 
             <b>Step 3</b>: Upload to DV360.
         `;
