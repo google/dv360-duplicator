@@ -175,7 +175,6 @@ export const SheetUtils = {
       ui.ButtonSet.YES_NO
     );
 
-    // TODO: "Loading" indicator
     if (ui.Button.YES == response) {
       try {
         SheetUtils.loading.show('Unarchiving ...');

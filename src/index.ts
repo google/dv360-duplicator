@@ -27,7 +27,7 @@ const SHEET_CACHE = CacheUtils.initCache(Config.CacheSheetName);
 
 function loadPartners() {
   if (SHEET_CACHE.Partners.isEmpty()) {
-    const partners = dv360.listPartners({ limit: 100 })
+    const partners = dv360.listPartners({ limit: 100 }) // TODO: remove limit?
       .map((partner) => [
         `${partner.displayName} (${partner.partnerId})`,
         partner.partnerId,
