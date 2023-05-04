@@ -1,7 +1,7 @@
 
 import { StringKeyObject, StringKeyObjectOfObjects } from './shared';
 import { Config } from './config';
-import { ExtNameGenerator } from './extname-generator';
+import { ExtNameGenerator } from './sdf-extname';
 import { SheetUtils } from './sheet-utils';
 import { dv360 } from './dv360-utils';
 
