@@ -36,6 +36,8 @@ function loadPartners() {
     
       SHEET_CACHE.Partners.set(partners);
   }
+
+  return SHEET_CACHE.Partners;
 }
 
 function loadAdvertisers(partnerId: string) {
@@ -93,32 +95,35 @@ function loadCampaigns(advertiserId: string) {
   return campaigns;
 }
 
-const partnerChangedHandler = TriggerUtils.generateOnEditHandler(
-  Config.WorkingSheet.Campaigns, 1, 1, SHEET_CACHE.Partners, loadAdvertisers
-);
-
-const advertiserChangedHandler = TriggerUtils.generateOnEditHandler(
-  Config.WorkingSheet.Campaigns, 2, 2, SHEET_CACHE.Advertisers, loadCampaigns
-);
-
-const checkArchivedCampaignHandler = TriggerUtils.generateOnEditHandler(
-  Config.WorkingSheet.Campaigns, 
-  3, 
-  2, // Not important since we use a custom run function
-  SHEET_CACHE.Campaigns, 
-  undefined,
-  SheetUtils.processArchivedCampaign
-);
-
-onEditEvent.addHandler(partnerChangedHandler);
-onEditEvent.addHandler(advertiserChangedHandler);
-onEditEvent.addHandler(checkArchivedCampaignHandler);
-
-function run() {
-  loadPartners();
+function addAllOnEditHandlers() {
+  const partnerChangedHandler = TriggerUtils.generateOnEditHandler(
+    Config.WorkingSheet.Campaigns, 1, 1, SHEET_CACHE.Partners, loadAdvertisers
+  );
+  
+  const advertiserChangedHandler = TriggerUtils.generateOnEditHandler(
+    Config.WorkingSheet.Campaigns, 2, 2, SHEET_CACHE.Advertisers, loadCampaigns
+  );
+  
+  const checkArchivedCampaignHandler = TriggerUtils.generateOnEditHandler(
+    Config.WorkingSheet.Campaigns, 
+    3, 
+    2, // Not important since we use a custom run function
+    SHEET_CACHE.Campaigns, 
+    undefined,
+    SheetUtils.processArchivedCampaign
+  );
+  
+  onEditEvent.addHandler(partnerChangedHandler);
+  onEditEvent.addHandler(advertiserChangedHandler);
+  onEditEvent.addHandler(checkArchivedCampaignHandler);
 }
+addAllOnEditHandlers();
 
 function setup() {
+  const partners = loadPartners();
+  Setup.setUpCampaignsSheet(partners.getAll().map(p => p[0]));
+  
+  addAllOnEditHandlers();
   onEditEvent.install();
 }
 

@@ -18,6 +18,7 @@ export const Config = {
         Name: appName,
         GenerateSDFForActiveSheet: 'Generate SDF(s) for active sheet',
         ClearCache: 'Clear cache',
+        Setup: 'Setup',
     },
     CacheSheetName: {
         Partners: '[DO NOT EDIT] Partners',
@@ -26,6 +27,12 @@ export const Config = {
     },
     WorkingSheet: {
         Campaigns: 'Campaigns',
+        CampaignsHeaders: [
+            'Partner',
+            'Advertiser',
+            'Campaign',
+            'Campaigns:Name'
+        ],
     },
     DV360DefaultFilters: {
         // We list here all the statuses, since we want ot be able to list

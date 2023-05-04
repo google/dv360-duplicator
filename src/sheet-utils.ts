@@ -24,12 +24,16 @@ export const SheetUtils = {
    * 
    * @param name Sheet's name
    */
-  getOrCreateSheet(name: string) {
+  getOrCreateSheet(name: string, hidden: boolean = false) {
     const spreadsheet = SpreadsheetApp.getActive();
     let sheet = spreadsheet.getSheetByName(name);
     if (!sheet) {
       sheet = spreadsheet.insertSheet(name);
     }
+    if (hidden) {
+      sheet.hideSheet();
+    }
+
     return sheet;
   },
 
