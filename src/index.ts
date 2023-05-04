@@ -41,7 +41,7 @@ function loadPartners() {
 function loadAdvertisers(partnerId: string) {
   let advertisers = SHEET_CACHE.Advertisers.lookup(partnerId, 1);
   if (! advertisers.length) {
-    const dv360advertisers = dv360.listAdvertisers(partnerId, { limit: 10 });
+    const dv360advertisers = dv360.listAdvertisers(partnerId, { limit: 100 }); // TODO: remove limit?
     if (dv360advertisers && dv360advertisers.length && dv360advertisers[0]) {
       advertisers = dv360advertisers.map((advertiser) => [
         `${advertiser.displayName} (${advertiser.advertiserId})`,
@@ -64,7 +64,7 @@ function loadCampaigns(advertiserId: string) {
     const dv360campaigns = dv360.listCampaigns(
       advertiserId,
       {
-        limit: 10,
+        limit: 100, // TODO: remove limit?
         // List all campaigns
         filter: DV360Utils.generateFilterString(
           'entityStatus',
