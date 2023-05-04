@@ -29,5 +29,16 @@ export const CacheUtils = {
         });
     
         return result;
+    },
+
+    /**
+     * Clear all cache instances
+     * 
+     * @param entities Key-Value pairs for all cache entities to be created
+     */
+    clearCache(entities: {[key: string]: SheetCache}) {
+        Object.keys(entities).forEach(key => {
+            entities[key].clear();
+        });
     }
 }

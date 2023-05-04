@@ -130,6 +130,11 @@ function onOpen(e: Event) {
   Setup.createMenu();
 }
 
+function clearCache() {
+  CacheUtils.clearCache(SHEET_CACHE);
+  loadPartners();
+}
+
 function generateSDFForActiveSheet(reloadCache?: boolean): void {
   const activeSheetName = SpreadsheetApp.getActiveSheet().getName();
   console.log(`generateSDFForActiveSheet for sheet '${activeSheetName}'`);

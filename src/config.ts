@@ -17,7 +17,7 @@ export const Config = {
     Menu: {
         Name: appName,
         GenerateSDFForActiveSheet: 'Generate SDF(s) for active sheet',
-        ReloadCacheForActiveSheet: 'Reload cache for active sheet',
+        ClearCache: 'Clear cache',
     },
     CacheSheetName: {
         Partners: '[DO NOT EDIT] Partners',
