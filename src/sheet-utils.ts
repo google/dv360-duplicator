@@ -15,7 +15,7 @@ import { CsvFile } from './csv-file';
 import { dv360 } from './dv360-utils';
 import { CacheValue, SheetCache } from './sheet-cache';
 import { Config } from './config';
-import { StringKeyObject } from './shared';
+import { StringKeyObject } from './shared-types';
 import { spinnerHTML } from './spinner';
 
 export const SheetUtils = {

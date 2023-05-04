@@ -14,7 +14,7 @@
 import { SheetUtils } from "./sheet-utils";
 import { Config } from "./config";
 import { SheetCache } from "./sheet-cache";
-import { StringKeyObject, StringKeyArrayOfObjects, StringKeyObjectOfObjects } from './shared';
+import { StringKeyObject, StringKeyArrayOfObjects, StringKeyObjectOfObjects } from './shared-types';
 import { sdfGenerator } from "./sdf-generator";
 
 export class NotFoundInSDF extends Error {}

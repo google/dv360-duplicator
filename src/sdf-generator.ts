@@ -1,5 +1,5 @@
 
-import { StringKeyObject, StringKeyObjectOfObjects } from './shared';
+import { StringKeyObject, StringKeyObjectOfObjects } from './shared-types';
 import { Config } from './config';
 import { ExtNameGenerator } from './sdf-extname';
 import { SheetUtils } from './sheet-utils';

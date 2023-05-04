@@ -1,5 +1,5 @@
 import { Config } from "./config";
-import { StringKeyObjectOfObjects } from './shared';
+import { StringKeyObjectOfObjects } from './shared-types';
 import { SdfEntityName } from "./sdf-generator";
 
 export class NotFoundInCache extends Error {}

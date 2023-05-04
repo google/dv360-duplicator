@@ -28,8 +28,8 @@ export const TriggerUtils = {
      * @param cache Cache object (see SheetCache)
      * @param loadFunction Function that returns an array of values for the 
      *  sub-entity drop down
-     * @param runFunction If specified this function will be triggered instead 
-     *  of default "run" function
+     * @param runFunction If specified, this function will be triggered instead 
+     *  of default "run"(loading sub-entities) function
      * @returns Correct handler to be added in the installable trigger 
      *  (e.g. `onEditEvent.addHandler(handler)`)
      */
@@ -43,15 +43,20 @@ export const TriggerUtils = {
     ): OnEditHandler {
         return {
             shouldRun({ range }) {
-                return (
-                  range.getSheet().getName() === sheetName &&
-                  range.getColumn() === columnNumber &&
-                  !!range.getValue()
-                );
+                const isOnlyOneColumnUpdated = !(range.getLastColumn() - range.getColumn());
+                const isThisTheColumnWeWaitFor = 
+                  range.getSheet().getName() === sheetName
+                  && range.getColumn() === columnNumber;
+                const isNewValueNonEmpty = !!range.getValue();
+
+                return isOnlyOneColumnUpdated
+                  && isThisTheColumnWeWaitFor
+                  && isNewValueNonEmpty;
             },
             run({ range }) {
-                console.log(`Running changed handler`);
-                console.log(`Source range: [${range.getColumn()}, ${range.getRow()}]`);
+                console.log(
+                  `Running changed handler. Source range: [${range.getColumn()}, ${range.getRow()}]`
+                );
 
                 if (runFunction) {
                   console.log(`Trigerring a custom runFunction ${runFunction}`);
