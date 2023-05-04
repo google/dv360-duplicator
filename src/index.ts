@@ -174,12 +174,19 @@ function downloadGeneratedSDFAsZIP(url: string) {
     const sdfDownload = new SdfDownload(url);
     const zipFile = Utilities.zip(sdfDownload.getAllCSVsFromSpreadsheet());
 
+    const fileName = `${Config.SDFGeneration.NewSpreadsheetTitle}.zip`;
     const fileInfo = {
-      title: `${Config.SDFGeneration.NewSpreadsheetTitle}.zip`,
+      title: fileName,
       mimeType: 'application/zip'
     };
-    const driveFile = Drive.Files?.insert(fileInfo, zipFile);
-    return driveFile?.downloadUrl;
+    Drive.Files?.insert(fileInfo, zipFile);
+
+    const driveFiles = DriveApp.getFilesByName(fileName);
+    if (!driveFiles || !driveFiles.hasNext()) {
+      throw Error(`ERROR: Cannot get file's download url. File name "${fileName}".`);
+    }
+
+    return driveFiles.next().getDownloadUrl();
   } catch (e: any) {
     SpreadsheetApp.getUi().alert(`ERROR: ${e.message}`);
   }

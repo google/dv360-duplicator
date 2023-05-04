@@ -34,12 +34,10 @@ export class SdfDownload {
 
   sheetToCSV(sheet: GoogleAppsScript.Spreadsheet.Sheet) {
     const url = "https://docs.google.com/spreadsheets/d/"
-      + this.currentSpreadsheet.getId() 
+      + this.currentSpreadsheet.getId()
       + `/export?gid=${sheet.getSheetId().toString()}&format=csv`;
     
-    const blob = this.fetchCSV(url);
-    blob.setName(`${sheet.getName()}.csv`);
-
+    const blob = this.fetchCSV(url).setName(`${sheet.getName()}.csv`);
     return blob;
   }
 

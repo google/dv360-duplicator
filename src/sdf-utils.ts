@@ -87,13 +87,14 @@ export const SdfUtils = {
         const sdf = sdfGenerator.generateAll(sheetData, campaigns);
         
         console.log('SDF is generated, saving to the new spreadsheet', sdf);
-        const newSheet = SdfUtils.saveToSpreadsheet(sdf);
-        const newSheetEscaped = newSheet.replace('"', '\\"');
+        const newSheet = SdfUtils.saveToSpreadsheet(sdf).replace('"', '\"');
 
         const htmlContent = `
             <script>
                 function initDownload(url) {
-                    alert(url);
+                    var d = document.createElement('a');
+                    d.href = url;
+                    d.click();
                 }
             </script>
             Done! Here is what you can do next:<br /><br />
@@ -101,9 +102,10 @@ export const SdfUtils = {
             <a href="${newSheet}" target="_blank">the SDF (by clicking here)</a> 
             and adjust it if needed.<br /><br />
 
-            <b>Step 2</b>: 
-            <a href="" target="_blank" onclick="google.script.run.withSuccessHandler(initDownload).downloadGeneratedSDFAsZIP('${newSheetEscaped}'); return false;">
-            download generated files as one "zip"</a>!<br /><br />
+            <b>Step 2</b>:
+            <a href="" target="_blank"
+                onclick="google.script.run.withSuccessHandler(initDownload).downloadGeneratedSDFAsZIP('${newSheet}'); return false;">
+            download generated files as one "zip"</a>.<br /><br />
 
             <b>Step 3</b>: Upload to DV360.
         `;
