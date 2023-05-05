@@ -140,6 +140,23 @@ function clearCache() {
   loadPartners();
 }
 
+function showHelpPage() {
+  const message = `
+  This solution <b>"${Config.Menu.Name}"</b> is developed with ❤️
+  by gTech Professional Services. <br /><br /><br />
+  Learn more and get help on our official page:<br />
+  <a target="_blank"
+    href="https://github.com/google/dv360-duplicator">
+    github.com/google/dv360-duplicator
+  </a>`;
+  
+  SpreadsheetApp.getUi()
+    .showModelessDialog(
+      HtmlService.createHtmlOutput(message),
+      Config.Menu.Help
+    );
+}
+
 function generateSDFForActiveSheet(reloadCache?: boolean): void {
   const activeSheetName = SpreadsheetApp.getActiveSheet().getName();
   console.log(`generateSDFForActiveSheet for sheet '${activeSheetName}'`);

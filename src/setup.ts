@@ -7,8 +7,9 @@ export const Setup = {
             .createMenu(Config.Menu.Name)
             .addItem(Config.Menu.GenerateSDFForActiveSheet, 'generateSDFForActiveSheet')
             .addSeparator()
-            .addItem(Config.Menu.Setup, 'setup')
             .addItem(Config.Menu.ClearCache, 'clearCache')
+            .addItem(Config.Menu.Install, 'setup')
+            .addItem(Config.Menu.Help, 'showHelpPage')
             .addToUi();
     },
 

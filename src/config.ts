@@ -16,9 +16,10 @@ const appName = 'DV360 Duplicator';
 export const Config = {
     Menu: {
         Name: appName,
-        GenerateSDFForActiveSheet: 'Generate SDF(s) for active sheet',
-        ClearCache: 'Clear cache',
-        Setup: 'Setup',
+        GenerateSDFForActiveSheet: '🚀  Generate SDF(s)',
+        ClearCache: '🧹  Clear cache',
+        Install: '🏗️  Install',
+        Help: '🆘  Help',
     },
     CacheSheetName: {
         Partners: '[DO NOT EDIT] Partners',
