@@ -93,9 +93,9 @@ export class SdfGenerator {
      * Generates one entry in the SDF by substituting the values in the template
      *  entity with the proper end SDF values according to the column names  
      *  specified in the spreadsheet. Especially it substitutes the following
-     *  types of entries: 1) prefixed with the entity type in the spreadsheet;
-     *  2) those that should not have any value; 3) generates correct "ext*" 
-     *  references.
+     *  types of entries (headers): 1) prefixed with the entity type in the 
+     *  spreadsheet; 2) those that should not have any value; 3) generates 
+     *  correct "ext*" ids.
      * 
      * @param key Column name in the spreadsheet
      * @param templateEntity The SDF row that should be used as a template
@@ -125,12 +125,12 @@ export class SdfGenerator {
         if (
             entityName in Config.SDFGeneration.SetNewExtId
             && key == Config.SDFGeneration.SetNewExtId[entityName]
-        ) {    
+        ) {
             return ExtNameGenerator.generateAndCache(
                 entityName, templateEntity[key]
             );
         }
-        
+
         return templateEntity[key];
     }
 
@@ -254,6 +254,10 @@ export class SdfGenerator {
                 entityHierarchy[entityName]['parent'] as SdfEntityName, 
                 parentIdValue
             );
+            console.log(
+                'generateSDFForDirectChildren',
+                parentIdKey, parentIdValue, parentIdCachedValue
+            );
 
             // Fetching all children
             const currentSDF = this.sdfGetFromSheetOrDownload(
@@ -268,11 +272,7 @@ export class SdfGenerator {
                 + entityHierarchy[entityName]['parentId'];
             
             currentSDF.forEach((entity:StringKeyObject) => {
-                changes[ extKey ] = ExtNameGenerator.generateAndCache(
-                    entityName,
-                    entity[ entityHierarchy[entityName]['id'] ]
-                );
-
+                changes[ extKey ] = parentIdValue;
                 result.push( this.generateSDFRow(entity, changes, entityName) );
             });
         });

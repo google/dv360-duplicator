@@ -24,10 +24,9 @@ export class ExtNameGenerator {
             !(entityName in ExtNameGenerator.cache) 
             || !(id in ExtNameGenerator.cache[entityName])
         ) {
-            console.log('Current ExtNameGenerator.cache', ExtNameGenerator.cache);
-            throw new NotFoundInCache(
-                `ExtNameGenerator didn't find [${entityName}][${id}] in cache`
-            );
+            const message = `ExtNameGenerator didn't find [${entityName}][${id}] in cache`;
+            console.log(message, 'Current ExtNameGenerator.cache', ExtNameGenerator.cache);
+            throw new NotFoundInCache(message);
         }
 
         return ExtNameGenerator.cache[entityName][id];
