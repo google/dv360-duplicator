@@ -37,7 +37,7 @@ export class SdfDownload {
   sheetToCSV(sheet: GoogleAppsScript.Spreadsheet.Sheet) {
     const data = sheet
       .getRange(1, 1, sheet.getLastRow(), sheet.getLastColumn())
-      .getValues();
+      .getDisplayValues();
     const csv = this.arrayToCSV(data);
     
     const blob = Utilities.newBlob(csv).setName(`${sheet.getName()}.csv`);
