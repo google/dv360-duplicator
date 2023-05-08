@@ -205,7 +205,7 @@ export class DV360 extends ApiClient {
         method: 'post'
       },
       {
-        version: 'SDF_VERSION_5_5', // TODO: Take version from the advertiser
+        version: 'SDF_VERSION_UNSPECIFIED',
         advertiserId: advertiserId,
         parentEntityFilter: {
           fileType: [
