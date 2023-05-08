@@ -26,45 +26,35 @@ export class SdfDownload {
     this.currentSpreadsheet
       .getSheets()
       .forEach((sheet: GoogleAppsScript.Spreadsheet.Sheet) => {
-        this.csvFiles.push(this.sheetToCSV(sheet));
+        if (sheet.getLastRow()) {
+          this.csvFiles.push(this.sheetToCSV(sheet));
+        }
       });
     
     return this.csvFiles;
   }
 
   sheetToCSV(sheet: GoogleAppsScript.Spreadsheet.Sheet) {
-    const url = "https://docs.google.com/spreadsheets/d/"
-      + this.currentSpreadsheet.getId()
-      + `/export?gid=${sheet.getSheetId().toString()}&format=csv`;
+    const data = sheet
+      .getRange(1, 1, sheet.getLastRow(), sheet.getLastColumn())
+      .getValues();
+    const csv = this.arrayToCSV(data);
     
-    const blob = this.fetchCSV(url).setName(`${sheet.getName()}.csv`);
+    const blob = Utilities.newBlob(csv).setName(`${sheet.getName()}.csv`);
     return blob;
   }
 
-  fetchCSV(url: string) {
-    try {
-      const res = UrlFetchApp.fetch(
-        url,
-        {
-          method: 'get',
-          headers: {
-            Authorization: "Bearer " + ScriptApp.getOAuthToken(),
-          }
-        }
+  arrayToCSV(arr: string[][]): string {
+    const rows: string[] = [];
+    arr.forEach(a => {
+      rows.push(
+        a.map(
+          b => `"${b.toString().replace('"', '""')}"`
+        )
+        .join(",")
       );
-
-      if (200 != res.getResponseCode() && 204 != res.getResponseCode()) {
-        console.log('HTTP code: ' + res.getResponseCode());
-        console.log('API error: ' + res.getContentText());
-        console.log('URL: ' + url);
-        throw Error(res.getContentText());
-      }
-
-      return res.getBlob();
-    } catch (e: any) {
-      console.log(e);
-      console.log(e.stack);
-      throw e;
-    }
+    });
+    
+    return rows.join("\n");
   }
 }

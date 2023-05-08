@@ -208,28 +208,23 @@ function downloadGeneratedSDFAsZIP(url: string) {
       throw Error(`Cannot get file's download url. File name "${fileName}".`);
     }
 
-    showDownloadLink(driveFile.getDownloadUrl());    
+    showDownloadLink(driveFile.getId(), driveFile.getResourceKey());    
   } catch (e: any) {
+    console.log(e);
+    console.log(e.stack);
     SpreadsheetApp.getUi().alert(`ERROR: ${e.message}`);
   }
 }
 
-function showDownloadLink(url: string) {
-  console.log('showDownloadLink url', url);
+function showDownloadLink(id: string, resourceKey: string|null) {
+  console.log('showDownloadLink id:', id, 'resourceKey:', resourceKey);
+  const url = `https://drive.google.com/file/d/${id}/view?resourcekey=${resourceKey}`;
+
   const html = `
-  Download should start automatically. 
-  If not started, just click on the link below.<br />
-  <a target="_blank" href="${url}">Download now</a>
+  Almost done!<br /><br />
+  ℹ:<i>After downloading you can upload this zip file to DV360 UI.</i>
   <br /><br /><br />
-  ℹ:<i>After downloading you can upload this zip file to DV360.</i>
-  <script>
-    function initDownload(url) {
-      var d = document.createElement('a');
-      d.href = url;
-      d.click();
-    }
-    initDownload("${url}");
-  </script>`;
+  <a target="_blank" href="${url}">Download now</a>`;
   
   SheetUtils.showHTMLPopUp(
     `🍾  Your SDF is now ready`,
