@@ -37,5 +37,5 @@ export const spinnerHTML = `
         }
       }      
     </style>
-    <div class="lds-ring"><div>⌛</div></div>
+    <div class="lds-ring"><div>⏳</div></div>
 `;

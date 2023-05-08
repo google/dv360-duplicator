@@ -208,14 +208,10 @@ export const SheetUtils = {
      * @param title Title of the message box
      */
     show(
-      message = 'Loading...',
-      title = 'Please wait',
+      message = 'Loading... Sorry, but it may take 1-2 minutes.',
+      title = '🐌  Please wait',
     ) {
-      SpreadsheetApp.getUi()
-        .showModelessDialog(
-          HtmlService.createHtmlOutput(message + '<br />' + spinnerHTML),
-          title
-        );
+      SheetUtils.showHTMLPopUp(title, message + '<br />' + spinnerHTML);
     },
 
     /**
@@ -233,5 +229,13 @@ export const SheetUtils = {
         title
       )
     },
+  },
+
+  showHTMLPopUp(title: string, html: string) {
+    SpreadsheetApp.getUi()
+      .showModelessDialog(
+        HtmlService.createHtmlOutput(html),
+        title
+      );
   },
 };

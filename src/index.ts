@@ -141,7 +141,7 @@ function clearCache() {
 }
 
 function showHelpPage() {
-  const message = `
+  const html = `
   This solution <b>"${Config.Menu.Name}"</b> is developed with ❤️
   by gTech Professional Services. <br /><br /><br />
   Learn more and get help on our official page:<br />
@@ -150,11 +150,7 @@ function showHelpPage() {
     github.com/google/dv360-duplicator
   </a>`;
   
-  SpreadsheetApp.getUi()
-    .showModelessDialog(
-      HtmlService.createHtmlOutput(message),
-      Config.Menu.Help
-    );
+  SheetUtils.showHTMLPopUp(Config.Menu.Help, html);
 }
 
 function generateSDFForActiveSheet(reloadCache?: boolean): void {
@@ -177,7 +173,8 @@ function generateSDFForActiveSheet(reloadCache?: boolean): void {
           }
         } else if (e instanceof NotFoundInSDF && reloadCache) {
           SpreadsheetApp.getUi().alert(
-            'After reloading the cache the campaign is still not found. Please try selecting a different campaign.'
+            `After reloading the cache the campaign is still not found. 
+            Please try selecting a different campaign.`
           );
           return;
         } else if (e instanceof EmptyDataSet) {
@@ -190,7 +187,9 @@ function generateSDFForActiveSheet(reloadCache?: boolean): void {
       break;
 
     default:
-      const message = `Unsupported sheet ('${activeSheetName}'), cannot generate SDF. Please select different sheet.`;
+      const message = `
+        Unsupported sheet ('${activeSheetName}'),
+        cannot generate SDF. Please select different sheet.`;
       SpreadsheetApp.getUi().alert(message);
       throw Error(message);
   }
@@ -198,23 +197,42 @@ function generateSDFForActiveSheet(reloadCache?: boolean): void {
 
 function downloadGeneratedSDFAsZIP(url: string) {
   try {
+    SheetUtils.loading.show();
     const sdfDownload = new SdfDownload(url);
     const zipFile = Utilities.zip(sdfDownload.getAllCSVsFromSpreadsheet());
 
     const fileName = `${Config.SDFGeneration.NewSpreadsheetTitle}.zip`;
-    const fileInfo = {
-      title: fileName,
-      mimeType: 'application/zip'
-    };
-    Drive.Files?.insert(fileInfo, zipFile);
-
-    const driveFiles = DriveApp.getFilesByName(fileName);
-    if (!driveFiles || !driveFiles.hasNext()) {
-      throw Error(`ERROR: Cannot get file's download url. File name "${fileName}".`);
+    zipFile.setName(fileName).setContentType('application/zip');
+    const driveFile = DriveApp.createFile(zipFile);
+    if (!driveFile) {
+      throw Error(`Cannot get file's download url. File name "${fileName}".`);
     }
 
-    return driveFiles.next().getDownloadUrl();
+    showDownloadLink(driveFile.getDownloadUrl());    
   } catch (e: any) {
     SpreadsheetApp.getUi().alert(`ERROR: ${e.message}`);
   }
+}
+
+function showDownloadLink(url: string) {
+  console.log('showDownloadLink url', url);
+  const html = `
+  Download should start automatically. 
+  If not started, just click on the link below.<br />
+  <a target="_blank" href="${url}">Download now</a>
+  <br /><br /><br />
+  ℹ:<i>After downloading you can upload this zip file to DV360.</i>
+  <script>
+    function initDownload(url) {
+      var d = document.createElement('a');
+      d.href = url;
+      d.click();
+    }
+    initDownload("${url}");
+  </script>`;
+  
+  SheetUtils.showHTMLPopUp(
+    `🍾  Your SDF is now ready`,
+    html
+  );
 }

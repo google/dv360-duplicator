@@ -94,7 +94,17 @@ export const SdfUtils = {
                 function initDownload(url) {
                     var d = document.createElement('a');
                     d.href = url;
+                    d.target = '_blank';
                     d.click();
+                }
+                function loading() {
+                    document.getElementById('loading-message')
+                        .style
+                        .visibility = 'visible';
+                }
+                function runDownload() {
+                    loading();
+                    google.script.run.downloadGeneratedSDFAsZIP('${newSheet}');
                 }
             </script>
             Done! Here is what you can do next:<br /><br />
@@ -104,15 +114,19 @@ export const SdfUtils = {
 
             <b>Step 2</b>:
             <a href="" target="_blank"
-                onclick="google.script.run.withSuccessHandler(initDownload).downloadGeneratedSDFAsZIP('${newSheet}'); return false;">
-            download generated files as one "zip"</a>.<br /><br />
+                onclick="runDownload(); return false;">
+            download generated files as one "zip"</a>.
+            <span id="loading-message" style="visibility: hidden;">
+                <br />Loading...
+            </span>
+            <br /><br />
 
             <b>Step 3</b>: Upload to DV360.
         `;
         const htmlOutput = HtmlService.createHtmlOutput(htmlContent);
         SpreadsheetApp.getUi().showModalDialog(
             htmlOutput, 
-            'SDF was generated 🤗'
+            '🤗  SDF was generated'
         );
     },
 
