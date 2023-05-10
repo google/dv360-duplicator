@@ -130,7 +130,7 @@ export class SheetCache {
                 this.cacheSheet.getLastRow(),
                 this.cacheSheet.getLastColumn()
             )
-            .getValues()
+            .getDisplayValues()
     }
 
     /**
@@ -159,7 +159,7 @@ export class SheetCache {
         for (let rowIndex=0; rowIndex<data.length; rowIndex++) {
             const row = data[rowIndex];
             if (row[index] === key) {
-                row[newValueIndex] = newValue;
+                row[newValueIndex] = newValue as string;
                 data[rowIndex] = row;
                 this.set(data);
     

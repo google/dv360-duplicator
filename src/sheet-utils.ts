@@ -50,7 +50,7 @@ export const SheetUtils = {
 
     return sheet
       .getRange(1, 1, sheet.getLastRow(), sheet.getLastColumn())
-      .getValues();
+      .getDisplayValues();
   },
 
   /**
@@ -128,7 +128,7 @@ export const SheetUtils = {
    * @param cache Where to search for info about that campaign
    */
   processArchivedCampaign(range: GoogleAppsScript.Spreadsheet.Range, cache: SheetCache) {
-    const campaign = "" + range.getValues()[0];
+    const campaign = "" + range.getDisplayValues()[0];
     const extendedCampaignInfo = cache.find(campaign, 0);
     if (! extendedCampaignInfo.length) {
       throw Error('Campaign not found');

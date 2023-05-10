@@ -82,7 +82,7 @@ export const TriggerUtils = {
                   `Target range: [${targetRange.getColumn()}, ${targetRange.getRow()}]`
                 );
             
-                const parentName = '' + range.getValues()[0];
+                const parentName = '' + range.getDisplayValues()[0];
                 console.log(`Parent name: ${parentName}`);
             
                 let defaultDropdownValue = '';
