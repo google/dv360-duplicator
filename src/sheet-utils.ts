@@ -174,8 +174,8 @@ export const SheetUtils = {
   ) {
     const ui = SpreadsheetApp.getUi();
     const response = ui.alert(
-      'You selected an archived campaign', 
-      'You can anarchive it (or duplicate) yourself in UI or we can do this for you. Do you want we unarchive it for you?',
+      '🗄️ You selected an archived campaign', 
+      'You can unarchive it (or duplicate) yourself in UI or we can do this for you. Do you want we unarchive it for you?',
       ui.ButtonSet.YES_NO
     );
 
