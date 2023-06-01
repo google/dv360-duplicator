@@ -127,12 +127,31 @@ function setup() {
   onEditEvent.install();
 }
 
+function autoInstall() {
+  const sheet = SpreadsheetApp.getActive()
+      .getSheetByName(Config.WorkingSheet.Campaigns);
+  if (!sheet || !sheet.getLastRow()) {
+      const ui = SpreadsheetApp.getUi();
+      const response = ui.alert(
+          '💿 Auto Install',
+          `It looks like "${Config.Menu.Name}" is not installed.
+          Do you want we install it for you now?`,
+          ui.ButtonSet.YES_NO
+      );
+
+      if (ui.Button.YES == response) {
+          setup();
+      }
+  }
+}
+
 function teardown() {
   onEditEvent.uninstall();
 }
 
 function onOpen(e: Event) {
   Setup.createMenu();
+  autoInstall();
 }
 
 function clearCache() {
