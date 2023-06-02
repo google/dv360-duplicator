@@ -37,6 +37,7 @@ Select existing GCP project or create a new one (you can find help
 [enable DV360 API](https://console.cloud.google.com/start/api?id=displayvideo.googleapis.com&credential=client_key) on that project.
 
 **Step 2**: Copy [this spreadsheet](https://docs.google.com/spreadsheets/d/1b_ygTMwEwbfUe4yd-EU1sgSh6gZpjZgIaxaY-EQC3Mw/copy?usp=sharing):
+
 ![Step 1: Copy spreadsheet](assets/gif/step-1.gif)
 
 **Step 3**: Connect your Google Cloud project to the copied Sheet 
@@ -46,14 +47,15 @@ Select existing GCP project or create a new one (you can find help
  and then [switch the project](https://developers.google.com/apps-script/guides/cloud-platform-projects#switch_to_a_different_standard), by pasting your project 
  number to the "GCP project number" field
 
-![Step 1: Copy spreadsheet](assets/gif/step-3.gif)
+![Step 3: Connect your Google Cloud project to the copied Sheet](assets/gif/step-3.gif)
 
-**Step 4**: Now you can go back to the sheet and install the solution by selecting 
+**Step 4**: Install. Now you can go back to the sheet and install the solution by selecting 
 menu "DV360 Duplicator > Install" and 
 [authorizing](https://developers.google.com/apps-script/guides/services/authorization)
 all required script permissions.
 
 **Note**: Sometimes you need to reload the newly copied spreadsheet to view this menu.
-![Step 1: Copy spreadsheet](assets/imgs/step-4.png)
+
+![Step 4: Install](assets/imgs/step-4.png)
 
 ## How to use DV360 Duplicator
