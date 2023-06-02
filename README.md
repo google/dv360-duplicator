@@ -1,7 +1,7 @@
 # DV360 Duplicator: Copy DV360 Campaigns Easy
 
-Do you often copy DV360 Campaigns, Line Items, YouTube Ads, etc. but with small 
-adjustments in them and it takes a lot of your time? Then this solution is for you.
+Do you often need to replicate DV360 Campaigns, Line Items, YouTube Ads, etc. with small 
+adjustments? Is it time consuming? Then this solution is for you.
 
 "DV360 Duplicator" is a custom DV360 solution that allows to duplicate existing
 marketing campaigns and adjust their settings in Google Sheets. Our solution
