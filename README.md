@@ -15,7 +15,7 @@ on the YouTube campaigns. Especially you can
 e.g. [list](https://developers.google.com/display-video/api/reference/rest/v2/advertisers.youtubeAdGroups/list) them, but you cannot create or modify those YouTube entities. That's why our
 solution uses
 [Structured Data Files](https://developers.google.com/display-video/api/structured-data-file/format)
-instead (for create/modify operations).
+instead.
 
 **(!) Prerequisite**: In order to use this solution you need a **Google Cloud Project** 
 with **enabled DV360 API**.
