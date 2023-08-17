@@ -12,7 +12,7 @@
 */
 
 import { SheetCache } from './sheet-cache';
-import { SheetUtils } from './sheets';
+import { SheetUtils } from './sheet-utils';
 
 export const CacheUtils = {
     /**
@@ -24,10 +24,21 @@ export const CacheUtils = {
         const result: {[key: string]: SheetCache} = {};
         Object.keys(entities).forEach((key: string) => {
             result[key] = new SheetCache(
-                SheetUtils.getOrCreateSheet(entities[key])
+                SheetUtils.getOrCreateSheet(entities[key], true)
             );
         });
     
         return result;
+    },
+
+    /**
+     * Clear all cache instances
+     * 
+     * @param entities Key-Value pairs for all cache entities to be created
+     */
+    clearCache(entities: {[key: string]: SheetCache}) {
+        Object.keys(entities).forEach(key => {
+            entities[key].clear();
+        });
     }
 }

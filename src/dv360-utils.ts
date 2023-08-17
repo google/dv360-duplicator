@@ -11,6 +11,8 @@
     limitations under the License.
 */
 
+import { DV360 } from "./dv360";
+
 export type LogicalOperation = 'OR'|'AND';
 
 export const DV360Utils = {
@@ -33,6 +35,9 @@ export const DV360Utils = {
                 .join(` ${logicalOperation} `)
             + ')';
 
-    }
+    },
 };
 
+const authToken = ScriptApp.getOAuthToken();
+// TODO: Improve the export logic in case the token is empty
+export const dv360 = new DV360(authToken ?? 'default');

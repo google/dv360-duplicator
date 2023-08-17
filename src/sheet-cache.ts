@@ -80,22 +80,11 @@ export class SheetCache {
     lookup(
         key: CacheValue, 
         index: number, 
-        returnOnlyOne: boolean = false
+        returnOnlyOne: boolean = false,
     ): Array<Array<CacheValue>> {
-        if (this.isEmpty()) {
-            return [];
-        }
-
-        const data = this.cacheSheet
-            .getRange(
-                1, 1,
-                this.cacheSheet.getLastRow(),
-                this.cacheSheet.getLastColumn()
-            )
-            .getValues();
-
+        const data = this.getAll();
         if (!data || !data.length) {
-            console.log(`Empty cache in sheet "${this.cacheSheet.getName()}"`);
+            console.log(`lookup: Empty cache in sheet "${this.cacheSheet.getName()}"`);
             return [];
         }
 
@@ -125,5 +114,60 @@ export class SheetCache {
      */
     clear() {
         this.cacheSheet.clear();
+    }
+
+    /**
+     * Returns all cached data as 2D array
+     */
+    getAll() {
+        if (this.isEmpty()) {
+            return [];
+        }
+
+        return this.cacheSheet
+            .getRange(
+                1, 1,
+                this.cacheSheet.getLastRow(),
+                this.cacheSheet.getLastColumn()
+            )
+            .getDisplayValues()
+    }
+
+    /**
+     * Find and update the first entry of the cache that satisfies the search 
+     *  criterias. Search criterias: where to put the new value.
+     * 
+     * @param key Search criterias: The value we are looking for
+     * @param index : The index of the column where we search for it
+     * @param newValue New value to insert into the cache row
+     * @param newValueIndex The column index where we put new value
+     * @returns TRUE if the entry was found and updated, FALSE otherwise
+     */
+    findAndUpdateOneElement(
+        key: CacheValue,
+        index: number,
+        newValue: CacheValue,
+        newValueIndex: number,
+    ) {
+        const data = this.getAll();
+        if (!data || !data.length) {
+            console.log(`findAndUpdateOneElement: Empty cache in sheet "${this.cacheSheet.getName()}"`);
+            return [];
+        }
+
+        let found = false;
+        for (let rowIndex=0; rowIndex<data.length; rowIndex++) {
+            const row = data[rowIndex];
+            if (row[index] === key) {
+                row[newValueIndex] = newValue as string;
+                data[rowIndex] = row;
+                this.set(data);
+    
+                found = true;
+                break;
+            }
+        }
+
+        return found;
     }
 }

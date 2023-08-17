@@ -13,7 +13,7 @@
 
 import { onEditEvent, OnEditHandler } from "./trigger";
 import { SheetCache, CacheValue } from "./sheet-cache";
-import { SheetUtils } from "./sheets";
+import { SheetUtils } from "./sheet-utils";
 
 export const TriggerUtils = {
     /**
@@ -24,10 +24,12 @@ export const TriggerUtils = {
      * @param sheetName The sheet name where we wait for the edit events
      * @param columnNumber Index of the column where we wait for the event
      *  (indexes start from 1)
-     * @param parentIdIndex Column index of the parnet entity ID in the "cache"
+     * @param parentIdIndex Column index of the parent entity ID in the "cache"
      * @param cache Cache object (see SheetCache)
      * @param loadFunction Function that returns an array of values for the 
      *  sub-entity drop down
+     * @param runFunction If specified, this function will be triggered instead 
+     *  of default "run"(loading sub-entities) function
      * @returns Correct handler to be added in the installable trigger 
      *  (e.g. `onEditEvent.addHandler(handler)`)
      */
@@ -36,19 +38,37 @@ export const TriggerUtils = {
         columnNumber: number,
         parentIdIndex: number,
         cache: SheetCache,
-        loadFunction: ((x: string) => CacheValue[] | CacheValue[][])
+        loadFunction?: ((x: string) => CacheValue[] | CacheValue[][]),
+        runFunction?: (r: GoogleAppsScript.Spreadsheet.Range, c: SheetCache) => any
     ): OnEditHandler {
         return {
             shouldRun({ range }) {
-                return (
-                  range.getSheet().getName() === sheetName &&
-                  range.getColumn() === columnNumber &&
-                  !!range.getValue()
-                );
+                const isOnlyOneColumnUpdated = !(range.getLastColumn() - range.getColumn());
+                const isThisTheColumnWeWaitFor = 
+                  range.getSheet().getName() === sheetName
+                  && range.getColumn() === columnNumber;
+                const isNewValueNonEmpty = !!range.getValue();
+
+                return isOnlyOneColumnUpdated
+                  && isThisTheColumnWeWaitFor
+                  && isNewValueNonEmpty;
             },
             run({ range }) {
-                console.log(`Running changed handler`);
-                console.log(`Source range: [${range.getColumn()}, ${range.getRow()}]`);
+                console.log(
+                  `Running changed handler. Source range: [${range.getColumn()}, ${range.getRow()}]`
+                );
+
+                if (runFunction) {
+                  console.log(`Trigerring a custom runFunction ${runFunction}`);
+                  return runFunction(range, cache)
+                }
+
+                if (! loadFunction) {
+                  throw Error(
+                    'Either "loadFunction" or "runFunction" should be specified'
+                  );
+                }
+
                 const campaignSheet = range.getSheet();
                 const targetRange = campaignSheet
                   .getRange(range.getRow(), range.getColumn() + 1)
@@ -62,7 +82,7 @@ export const TriggerUtils = {
                   `Target range: [${targetRange.getColumn()}, ${targetRange.getRow()}]`
                 );
             
-                const parentName = '' + range.getValues()[0];
+                const parentName = '' + range.getDisplayValues()[0];
                 console.log(`Parent name: ${parentName}`);
             
                 let defaultDropdownValue = '';

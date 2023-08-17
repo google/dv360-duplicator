@@ -11,7 +11,16 @@
     limitations under the License.
 */
 
+const appName = 'DV360 Duplicator';
+
 export const Config = {
+    Menu: {
+        Name: appName,
+        GenerateSDFForActiveSheet: '🚀  Generate SDF(s)',
+        ClearCache: '🧹  Clear cache',
+        Install: '🏗️  Install',
+        Help: '🆘  Help',
+    },
     CacheSheetName: {
         Partners: '[DO NOT EDIT] Partners',
         Advertisers: '[DO NOT EDIT] Advertisers',
@@ -19,6 +28,12 @@ export const Config = {
     },
     WorkingSheet: {
         Campaigns: 'Campaigns',
+        CampaignsHeaders: [
+            'Partner',
+            'Advertiser',
+            'Campaign',
+            'Campaigns:Name'
+        ],
     },
     DV360DefaultFilters: {
         // We list here all the statuses, since we want ot be able to list
@@ -29,4 +44,30 @@ export const Config = {
             'ENTITY_STATUS_ARCHIVED',
         ],
     },
+    CampaignStatus: {
+        Active: 'ENTITY_STATUS_ACTIVE',
+        Archived: 'ENTITY_STATUS_ARCHIVED',
+        Paused: 'ENTITY_STATUS_PAUSED',
+    },
+    SDFGeneration: {
+        // In the stpreadsheet changes will have same column name as in SDF
+        // but with this prefix
+        EntityNameDelimiter: ':',
+        NewIdPrefix: 'ext',
+
+        // Some fields should be always empty for the items we create
+        ClearEntriesForNewSDF: [
+            'Timestamp',
+        ],
+
+        SetNewExtId: {
+            Campaigns: "Campaign Id",
+            InsertionOrders: "Io Id",
+            LineItems: "Line Item Id",
+            AdGroups: "Ad Group Id",
+            AdGroupAds: "Ad Id",
+        },
+
+        NewSpreadsheetTitle: `[${appName}] Generated SDF (${Date()})`,
+    }
 };
