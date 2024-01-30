@@ -1,7 +1,9 @@
-# DV360 Duplicator: Copy DV360 Campaigns Easy
+# DV360 Duplicator: Copy/Replicate DV360 Campaigns Easy
 
-Do you often need to replicate DV360 Campaigns, Line Items, YouTube Ads, etc. with small 
-adjustments? Is it time consuming? Then this solution is for you.
+[![Code Style: Google](https://img.shields.io/badge/code%20style-google-blueviolet.svg)](https://github.com/google/gts)
+[![GitHub License](https://img.shields.io/github/license/google-marketing-solutions/adios)](https://github.com/google-marketing-solutions/adios/blob/main/LICENSE)
+
+Tired of manually replicating DV360 campaigns? DV360 Duplicator automates the process, saving you time and effort while working around DV360 API limitations. [Get Started Now.](#how-to-install-dv360-duplicator)
 
 "DV360 Duplicator" is a custom DV360 solution that allows to duplicate existing
 marketing campaigns and adjust their settings in Google Sheets. Our solution
@@ -20,25 +22,31 @@ instead.
 **(!) Prerequisite**: In order to use this solution you need a **Google Cloud Project** 
 with **enabled DV360 API**.
 
+## Benefits
+
+* Bulk duplicate campaigns and line items
+* Customize targeting, dates, and budgets in one Sheet
+* Workaround API limitations for YouTube ad replication
+
 ## Intro
 
 Below you will find information on:
-* How to install DV360 Duplicator.
-* How to copy your DV360 campaigns fast (including partial copy, e.g. copy only YouTube Ads).
-* Current limitations and caveats.
+* How to install DV360 Duplicator
+* How to copy your DV360 campaigns fast
 
 ## How to install DV360 Duplicator
 
+https://github.com/google/dv360-duplicator/assets/3335483/6c56a27b-ecad-4654-b0a9-ffe8fd46541c
+
 **Step 1**: Prepare your Google Cloud project:
 
-Select existing GCP project or create a new one (you can find help
+1. Select existing GCP project or create a new one (you can find help
 [here](https://cloud.google.com/resource-manager/docs/creating-managing-projects)
 ) and
 [enable DV360 API](https://console.cloud.google.com/start/api?id=displayvideo.googleapis.com&credential=client_key) on that project.
+1. Configure [OAuth consent](https://console.cloud.google.com/apis/credentials/consent) (if you haven't done before for this project)
 
-**Step 2**: Copy [this spreadsheet](https://docs.google.com/spreadsheets/d/1b_ygTMwEwbfUe4yd-EU1sgSh6gZpjZgIaxaY-EQC3Mw/copy?usp=sharing):
-
-![Step 1: Copy spreadsheet](assets/gif/step-1.gif)
+**Step 2**: Copy [this spreadsheet](https://docs.google.com/spreadsheets/d/1b_ygTMwEwbfUe4yd-EU1sgSh6gZpjZgIaxaY-EQC3Mw/copy?usp=sharing).
 
 **Step 3**: Connect your Google Cloud project to the copied Sheet 
 (actually to the Apps Script project):
@@ -47,15 +55,17 @@ Select existing GCP project or create a new one (you can find help
  and then [switch the project](https://developers.google.com/apps-script/guides/cloud-platform-projects#switch_to_a_different_standard), by pasting your project 
  number to the "GCP project number" field
 
-![Step 3: Connect your Google Cloud project to the copied Sheet](assets/gif/step-3.gif)
-
 **Step 4**: Install. Now you can go back to the sheet and install the solution by selecting 
 menu "DV360 Duplicator > Install" and 
 [authorizing](https://developers.google.com/apps-script/guides/services/authorization)
 all required script permissions.
 
-**Note**: Sometimes you need to reload the newly copied spreadsheet to view this menu.
-
-![Step 4: Install](assets/imgs/step-4.png)
+**Note**: Sometimes you need to reload the newly copied spreadsheet to view the menu.
 
 ## How to use DV360 Duplicator
+
+https://github.com/google/dv360-duplicator/assets/3335483/b452e283-1e01-46d5-b4f8-551bf19fbc4e
+
+## Disclaimer
+
+**This is not an official Google product.**
