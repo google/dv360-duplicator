@@ -1,4 +1,4 @@
-# DV360 Duplicator: Copy DV360 Campaigns Easy
+# DV360 Duplicator: Copy/Replicate DV360 Campaigns Easy
 
 Do you often need to replicate DV360 Campaigns, Line Items, YouTube Ads, etc. with small 
 adjustments? Is it time consuming? Then this solution is for you.
@@ -25,7 +25,6 @@ with **enabled DV360 API**.
 Below you will find information on:
 * How to install DV360 Duplicator.
 * How to copy your DV360 campaigns fast (including partial copy, e.g. copy only YouTube Ads).
-* Current limitations and caveats.
 
 ## How to install DV360 Duplicator
 
