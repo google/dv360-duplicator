@@ -1,5 +1,8 @@
 # DV360 Duplicator: Copy/Replicate DV360 Campaigns Easy
 
+[![Code Style: Google](https://img.shields.io/badge/code%20style-google-blueviolet.svg)](https://github.com/google/gts)
+[![GitHub License](https://img.shields.io/github/license/google-marketing-solutions/adios)](https://github.com/google-marketing-solutions/adios/blob/main/LICENSE)
+
 Do you often need to replicate DV360 Campaigns, Line Items, YouTube Ads, etc. with small 
 adjustments? Is it time consuming? Then this solution is for you.
 
@@ -28,16 +31,17 @@ Below you will find information on:
 
 ## How to install DV360 Duplicator
 
-https://github.com/google/dv360-duplicator/assets/3335483/bb561c1a-caae-48b1-b242-e187f7f2d6d6
+https://github.com/google/dv360-duplicator/assets/3335483/6c56a27b-ecad-4654-b0a9-ffe8fd46541c
 
 **Step 1**: Prepare your Google Cloud project:
 
-Select existing GCP project or create a new one (you can find help
+1. Select existing GCP project or create a new one (you can find help
 [here](https://cloud.google.com/resource-manager/docs/creating-managing-projects)
 ) and
 [enable DV360 API](https://console.cloud.google.com/start/api?id=displayvideo.googleapis.com&credential=client_key) on that project.
+1. Configure [OAuth consent](https://console.cloud.google.com/apis/credentials/consent) (if you haven't done before for this project)
 
-**Step 2**: Copy [this spreadsheet](https://docs.google.com/spreadsheets/d/1b_ygTMwEwbfUe4yd-EU1sgSh6gZpjZgIaxaY-EQC3Mw/copy?usp=sharing):
+**Step 2**: Copy [this spreadsheet](https://docs.google.com/spreadsheets/d/1b_ygTMwEwbfUe4yd-EU1sgSh6gZpjZgIaxaY-EQC3Mw/copy?usp=sharing).
 
 **Step 3**: Connect your Google Cloud project to the copied Sheet 
 (actually to the Apps Script project):
