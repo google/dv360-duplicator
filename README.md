@@ -23,8 +23,8 @@ with **enabled DV360 API**.
 ## Intro
 
 Below you will find information on:
-* How to install DV360 Duplicator.
-* How to copy your DV360 campaigns fast (including partial copy, e.g. copy only YouTube Ads).
+* How to install DV360 Duplicator
+* How to copy your DV360 campaigns fast
 
 ## How to install DV360 Duplicator
 
