@@ -3,8 +3,7 @@
 [![Code Style: Google](https://img.shields.io/badge/code%20style-google-blueviolet.svg)](https://github.com/google/gts)
 [![GitHub License](https://img.shields.io/github/license/google-marketing-solutions/adios)](https://github.com/google-marketing-solutions/adios/blob/main/LICENSE)
 
-Do you often need to replicate DV360 Campaigns, Line Items, YouTube Ads, etc. with small 
-adjustments? Is it time consuming? Then this solution is for you.
+Tired of manually replicating DV360 campaigns? DV360 Duplicator automates the process, saving you time and effort while working around DV360 API limitations. [Get Started Now.](#how-to-install-dv360-duplicator)
 
 "DV360 Duplicator" is a custom DV360 solution that allows to duplicate existing
 marketing campaigns and adjust their settings in Google Sheets. Our solution
@@ -22,6 +21,12 @@ instead.
 
 **(!) Prerequisite**: In order to use this solution you need a **Google Cloud Project** 
 with **enabled DV360 API**.
+
+## Benefits
+
+* Bulk duplicate campaigns and line items
+* Customize targeting, dates, and budgets in one Sheet
+* Workaround API limitations for YouTube ad replication
 
 ## Intro
 
