@@ -29,6 +29,8 @@ Below you will find information on:
 
 ## How to install DV360 Duplicator
 
+https://github.com/google/dv360-duplicator/assets/3335483/bb561c1a-caae-48b1-b242-e187f7f2d6d6
+
 **Step 1**: Prepare your Google Cloud project:
 
 Select existing GCP project or create a new one (you can find help
@@ -38,8 +40,6 @@ Select existing GCP project or create a new one (you can find help
 
 **Step 2**: Copy [this spreadsheet](https://docs.google.com/spreadsheets/d/1b_ygTMwEwbfUe4yd-EU1sgSh6gZpjZgIaxaY-EQC3Mw/copy?usp=sharing):
 
-![Step 1: Copy spreadsheet](assets/gif/step-1.gif)
-
 **Step 3**: Connect your Google Cloud project to the copied Sheet 
 (actually to the Apps Script project):
 1. [Determine the **number** of your Cloud project](https://developers.google.com/apps-script/guides/cloud-platform-projects#determine_the_id_number_of_a_standard). This should be only digits.
@@ -47,15 +47,17 @@ Select existing GCP project or create a new one (you can find help
  and then [switch the project](https://developers.google.com/apps-script/guides/cloud-platform-projects#switch_to_a_different_standard), by pasting your project 
  number to the "GCP project number" field
 
-![Step 3: Connect your Google Cloud project to the copied Sheet](assets/gif/step-3.gif)
-
 **Step 4**: Install. Now you can go back to the sheet and install the solution by selecting 
 menu "DV360 Duplicator > Install" and 
 [authorizing](https://developers.google.com/apps-script/guides/services/authorization)
 all required script permissions.
 
-**Note**: Sometimes you need to reload the newly copied spreadsheet to view this menu.
-
-![Step 4: Install](assets/imgs/step-4.png)
+**Note**: Sometimes you need to reload the newly copied spreadsheet to view the menu.
 
 ## How to use DV360 Duplicator
+
+https://github.com/google/dv360-duplicator/assets/3335483/b452e283-1e01-46d5-b4f8-551bf19fbc4e
+
+## Disclaimer
+
+**This is not an official Google product.**
