@@ -84,7 +84,7 @@ export class DV360 extends ApiClient {
    */
   constructor(
     authToken: string,
-    dv360BaseUrl = 'https://displayvideo.googleapis.com/v2'
+    dv360BaseUrl = 'https://displayvideo.googleapis.com/v4'
   ) {
     super(dv360BaseUrl, authToken);
   }
@@ -249,7 +249,7 @@ export class DV360 extends ApiClient {
     //url doesn't contain version, just /media/
     const downloadMediaUrl = this.getUrl(
       `download/${resourceName}?alt=media`
-    ).replace('/v2', '');
+    ).replace('/v4', '');
     const downloadMedia = this.fetchBlob(downloadMediaUrl);
     //TODO move somewhere else afterwards
     downloadMedia.setContentType('application/zip');
